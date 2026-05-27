@@ -1,0 +1,4 @@
+interface:
+  display_name: "Taglow Participant Auth Routing"
+  short_description: "Build auth, guards, and public routes."
+  default_prompt: "Use $taglow-participant-auth-routing when implementing Taglow public survey routes, Google login, Handong email checks, or duplicate guards."

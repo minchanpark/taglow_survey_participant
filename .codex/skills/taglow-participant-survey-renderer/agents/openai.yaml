@@ -1,0 +1,4 @@
+interface:
+  display_name: "Taglow Participant Survey Renderer"
+  short_description: "Build sections and question rendering."
+  default_prompt: "Use $taglow-participant-survey-renderer when implementing Taglow participant sections, progress, locale fallback, or question components."

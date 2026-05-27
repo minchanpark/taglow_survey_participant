@@ -1,4 +1,4 @@
-# Taglow Survey Participant PRD v8
+# Taglow Survey Participant PRD
 
 # 1. 문서 개요
 

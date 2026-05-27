@@ -1,0 +1,4 @@
+interface:
+  display_name: "Taglow Participant Orchestrator"
+  short_description: "Coordinate participant implementation phases."
+  default_prompt: "Use $taglow-participant-orchestrator to coordinate Taglow participant implementation across API, auth, rendering, draft, image tagging, and tests."

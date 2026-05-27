@@ -1,0 +1,30 @@
+{
+  "reference_id": "toss",
+  "description": "Taglow Survey participant React SPA for Handong University students, using Toss-inspired clean mobile-first survey UX.",
+  "mode": "inspired",
+  "delta_set": {
+    "axes": {
+      "density.shift": 0,
+      "radius.delta_px": 0,
+      "tracking.shift": "0em"
+    },
+    "voiceHints": [
+      "plain Korean-first participant copy",
+      "short low-pressure survey instructions",
+      "avoid technical terms in participant-facing UI"
+    ],
+    "matchedKeywords": [
+      "toss",
+      "calm",
+      "trustworthy",
+      "minimal",
+      "korean",
+      "mobile-first"
+    ],
+    "warnings": [
+      "Reference DESIGN.md was not installed locally; generated from Toss fingerprint plus project PRD/TDD."
+    ]
+  },
+  "bootstrapped_at": "2026-05-27T15:45:36Z"
+}
+

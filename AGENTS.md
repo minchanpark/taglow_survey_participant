@@ -1,0 +1,81 @@
+# Taglow Survey Participant Agent Guide
+
+This repository implements the Taglow Survey participant view. Treat these documents as the product and technical source of truth:
+
+- `dev/Taglow_Survey_Participant_PRD.md`
+- `dev/Taglow_survey_Participant_TDD.md`
+
+Before editing under `src/`, read this file plus the nearest `AGENTS.md` in the target directory.
+
+## Product Invariants
+
+- Participants enter by public URL or QR, authenticate with Google, and only `@handong.ac.kr` accounts can submit.
+- The participant view is mobile-first, section-based, bilingual (`ko` and `en`), and designed to reduce survey fatigue.
+- Drafts are client-side only until final submission. Keep drafts separated by `survey_id + participant_user_id`.
+- Final submit creates one `responses` row and many `answers` rows.
+- Store analytics-friendly values: stable option values, score values, topic keys, space keys, and image ratios. Do not store translated labels as answer values.
+- Image or floorplan points are stored with `x_ratio` and `y_ratio` in the inclusive `0..1` range.
+
+## Required Stack
+
+- React + TypeScript
+- React Router
+- TanStack Query for server state
+- Zustand for participant UI/progress state
+- React Hook Form for section/question form state
+- Zod for validation
+- Supabase Auth/Database/Storage behind the participant API boundary
+- Vitest + React Testing Library
+- Playwright for E2E
+
+## API Boundary
+
+Keep this dependency flow:
+
+```text
+View
+  -> Query / Mutation Hook
+  -> ParticipantApiController
+  -> ParticipantPayloadMapper
+  -> ParticipantApiGateway
+  -> Supabase Database / Auth / Storage
+```
+
+Rules:
+
+- Views and reusable components must not import Supabase SDK, gateways, raw database rows, or table names.
+- Query hooks must call `ParticipantApiController`, not gateways or mappers directly.
+- Gateways own external IO and raw payload shapes.
+- Mappers own raw-to-domain and command-to-persistence conversions.
+- Gateway replacement from Supabase to HTTP must not require view, hook, or controller rewrites.
+
+## Implementation Order
+
+Follow the TDD phases unless the user narrows the task:
+
+1. Foundation: app shell, providers, query client, runtime, stores, public routes.
+2. Survey Renderer: public survey query, sections, progress, question components, locale fallback.
+3. Draft / Validation: React Hook Form, Zod schemas, autosave, restore banner, branch evaluator, low-score follow-up.
+4. Image Tagging: asset rendering, coordinate ratios, pins, tag metadata, edit/delete, max tag limits.
+5. Submission: payload mapper, Supabase insert/RPC, duplicate check, complete/error pages.
+6. E2E Hardening: mobile viewport, bilingual flow, draft restore, submit failure, final submit.
+
+## Testing Expectations
+
+- Add unit tests for pure mappers, validators, draft storage, branch evaluation, and image ratio utilities.
+- Add component tests for each question type and section navigation behavior.
+- Add route tests for auth/domain/duplicate/closed/not-found states.
+- Add Playwright coverage for the full happy path and at least one draft restore or submit failure path.
+- When changing a layer boundary, add a regression test or lint-like check that prevents Supabase imports from leaking into views.
+
+## File Organization
+
+Use the `src/` tree defined in the TDD. Every `src` directory has its own `AGENTS.md`; keep those files updated when responsibilities change.
+
+<!-- omd:start v=1 hash=be71c8d154c9 -->
+## Design System (oh-my-design)
+
+**Before any UI, styling, copy, or motion change, open and read `./DESIGN.md` in full.** It is the authoritative brand/design spec. Treat its tokens, voice, and component rules as binding unless the user overrides in chat.
+
+If present, read `./.omd/preferences.md` — pending corrections not yet folded into DESIGN.md. Apply them; flag conflicts.
+<!-- omd:end -->

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Taglow Participant Image Tagging"
+  short_description: "Build image tagging and ratio coordinates."
+  default_prompt: "Use $taglow-participant-image-tagging when implementing Taglow image or floorplan tagging, pins, ratios, tag forms, or image-tag persistence."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Taglow Participant API Boundary"
+  short_description: "Build participant API boundary layers."
+  default_prompt: "Use $taglow-participant-api-boundary when implementing Taglow participant models, controllers, gateways, mappers, RLS, or submission persistence."

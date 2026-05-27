@@ -1,0 +1,4 @@
+interface:
+  display_name: "Taglow Participant UX Copy"
+  short_description: "Refine mobile UX and bilingual copy."
+  default_prompt: "Use $taglow-participant-ux-copy when refining Taglow participant mobile UX, accessibility, validation messages, or Korean/English copy."

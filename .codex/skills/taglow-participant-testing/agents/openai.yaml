@@ -1,0 +1,4 @@
+interface:
+  display_name: "Taglow Participant Testing"
+  short_description: "Create participant flow test coverage."
+  default_prompt: "Use $taglow-participant-testing when adding Taglow participant Vitest, React Testing Library, Playwright, fixtures, or completion checks."

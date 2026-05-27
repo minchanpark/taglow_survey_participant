@@ -1,0 +1,4 @@
+interface:
+  display_name: "Taglow Participant Answer Validation"
+  short_description: "Validate and normalize answer drafts."
+  default_prompt: "Use $taglow-participant-answer-validation when implementing Taglow Zod schemas, branch evaluation, low-score follow-ups, or answer normalization."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Taglow Participant Draft Cache"
+  short_description: "Build draft autosave and restore."
+  default_prompt: "Use $taglow-participant-draft-cache when implementing Taglow local draft keys, autosave, restore prompts, schema handling, or cleanup."
