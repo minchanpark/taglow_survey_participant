@@ -5,9 +5,11 @@ This directory owns TanStack Query hooks for participant server state.
 ## Expected Files
 
 - `queryKeys.ts`
+- `useParticipantSessionQuery.ts`
 - `usePublicSurveyQuery.ts`
 - `useSubmissionMutation.ts`
 - `useDuplicateSubmissionQuery.ts`
+- `useAssetUrlQuery.ts`
 
 ## Responsibilities
 
