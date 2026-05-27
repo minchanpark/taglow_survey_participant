@@ -1,0 +1,4 @@
+interface:
+  display_name: "OMD Reference Capture"
+  short_description: "Capture live reference brand context"
+  default_prompt: "Use $omd-reference-capture to capture live reference brand context safely."

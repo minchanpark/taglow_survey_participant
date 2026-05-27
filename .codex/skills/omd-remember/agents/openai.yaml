@@ -1,0 +1,4 @@
+interface:
+  display_name: "OMD Remember"
+  short_description: "Log design preferences safely"
+  default_prompt: "Use $omd-remember to record this design preference for later learning."

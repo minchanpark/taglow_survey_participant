@@ -1,0 +1,4 @@
+interface:
+  display_name: "OMD Final QA"
+  short_description: "Run final read-only QA checks"
+  default_prompt: "Use $omd-final-qa to run the final read-only QA rubric before publishing."

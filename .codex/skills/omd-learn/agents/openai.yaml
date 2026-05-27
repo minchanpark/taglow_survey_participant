@@ -1,0 +1,4 @@
+interface:
+  display_name: "OMD Learn"
+  short_description: "Merge preferences into DESIGN.md"
+  default_prompt: "Use $omd-learn to merge pending design preferences into DESIGN.md."

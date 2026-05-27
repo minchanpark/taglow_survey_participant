@@ -1,0 +1,4 @@
+interface:
+  display_name: "OMD Codex Image"
+  short_description: "Materialize image placeholders"
+  default_prompt: "Use $omd-codex-image to materialize omd:gen-image placeholders for this artifact."

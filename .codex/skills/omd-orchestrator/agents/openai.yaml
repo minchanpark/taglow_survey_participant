@@ -1,0 +1,4 @@
+interface:
+  display_name: "OMD Orchestrator"
+  short_description: "Route multi-role design workflows"
+  default_prompt: "Use $omd-orchestrator to route this multi-role design or writing workflow."

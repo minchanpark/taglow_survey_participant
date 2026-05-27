@@ -1,0 +1,4 @@
+interface:
+  display_name: "OMD Designer Review"
+  short_description: "Audit UI against DESIGN.md"
+  default_prompt: "Use $omd-designer-review to audit this UI artifact against DESIGN.md."

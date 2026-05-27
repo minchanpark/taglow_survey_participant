@@ -1,0 +1,4 @@
+interface:
+  display_name: "OMD Asset Fetch"
+  short_description: "Fetch verified free-license assets"
+  default_prompt: "Use $omd-asset-fetch to replace generic placeholders with verified free-license assets."

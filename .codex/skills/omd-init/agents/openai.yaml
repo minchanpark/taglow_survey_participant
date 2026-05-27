@@ -1,0 +1,4 @@
+interface:
+  display_name: "OMD Init"
+  short_description: "Bootstrap DESIGN.md and shims"
+  default_prompt: "Use $omd-init to bootstrap DESIGN.md and agent shims for this project."

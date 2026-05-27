@@ -1,0 +1,4 @@
+interface:
+  display_name: "OMD Sync"
+  short_description: "Sync DESIGN.md to agent shims"
+  default_prompt: "Use $omd-sync to update agent shims after DESIGN.md changes."

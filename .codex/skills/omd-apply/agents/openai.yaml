@@ -1,0 +1,4 @@
+interface:
+  display_name: "OMD Apply"
+  short_description: "Apply DESIGN.md brand context"
+  default_prompt: "Use $omd-apply to apply DESIGN.md brand context to a focused UI change."

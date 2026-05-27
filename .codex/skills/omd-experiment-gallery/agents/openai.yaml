@@ -1,0 +1,4 @@
+interface:
+  display_name: "OMD Experiment Gallery"
+  short_description: "Build multi-brand result galleries"
+  default_prompt: "Use $omd-experiment-gallery to build a comparison gallery for these brand experiments."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "OMD KR Writer"
+  short_description: "Draft Korean content presets"
+  default_prompt: "Use $omd-kr-writer to draft Korean content with the right voice preset."
