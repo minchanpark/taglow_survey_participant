@@ -10,7 +10,7 @@ Use this skill for the participant UI that lets users tap an image or floorplan 
 ## Read first
 
 - PRD section: `14. Image/Floorplan Tagging`, plus `24. Validation` and `25. Mobile/Accessibility`.
-- TDD section: `14. Image Tagging`, plus `15. Submission Payload` and `19. Test Strategy`.
+- TDD v2 sections: `13.2 ImageTagQuestion`, `18. Storage Image Loading`, plus `15. Submission Payload` and `20. Test Strategy`.
 
 ## Participant wording
 
@@ -42,15 +42,17 @@ Render pins from ratios so they remain correct after responsive image resizing.
 
 ## UI flow
 
-1. Load asset from `assetMap` and render it responsively.
-2. Participant taps/clicks a location.
-3. Show a pin at the ratio position.
-4. Ask tag type: discomfort, improvement, risk, satisfaction, missing guidance, etc.
-5. Ask severity when configured.
-6. Ask for a short text explanation when required.
-7. Save the point into the answer draft.
-8. Allow edit/delete before final submission.
-9. Prevent adding more than `max_tags`.
+1. Resolve `questions.config.assetId` to a `survey_assets` row.
+2. Load a signed URL through `ParticipantApiGateway.createSignedAssetUrl(bucket, path)` via controller/query behavior.
+3. Render the image responsively.
+4. Participant taps/clicks a location.
+5. Show a pin at the ratio position.
+6. Ask tag type: discomfort, improvement, risk, satisfaction, missing guidance, etc.
+7. Ask severity when configured.
+8. Ask for a short text explanation when required.
+9. Save the point into the answer draft.
+10. Allow edit/delete before final submission.
+11. Prevent adding more than `max_tags`.
 
 ## Answer shape
 
@@ -88,7 +90,8 @@ text_value = point.textValue
 - Keep text inputs visible when mobile keyboard opens.
 - Support keyboard reachable edit/delete controls for existing pins.
 - If zoom/pan is added, keep pin placement deterministic after transforms.
-- If image fails to load and the question is required, show a blocking error with retry or alternative path.
+- If image or signed URL loading fails, show a retry button and block submission for required image questions.
+- Do not construct Supabase Storage URLs directly in view components.
 
 ## Tests to add
 
@@ -98,4 +101,4 @@ text_value = point.textValue
 - edit/delete updates the draft.
 - required text and ratio bounds are validated.
 - two image points submit as two `answers` rows.
-
+- signed asset URL failure shows retry and prevents required image submit.

@@ -3,7 +3,9 @@
 This repository implements the Taglow Survey participant view. Treat these documents as the product and technical source of truth:
 
 - `dev/Taglow_Survey_Participant_PRD.md`
-- `dev/Taglow_survey_Participant_TDD.md`
+- `dev/Taglow_survey_Participant_TDD_v2.md`
+
+`dev/Taglow_survey_Participant_TDD_v2.md` supersedes the earlier participant TDD. Use the older TDD only as historical context if v2 is silent.
 
 Before editing under `src/`, read this file plus the nearest `AGENTS.md` in the target directory.
 
@@ -12,6 +14,7 @@ Before editing under `src/`, read this file plus the nearest `AGENTS.md` in the 
 - Participants enter by public URL or QR, authenticate with Google, and only `@handong.ac.kr` accounts can submit.
 - The participant view is mobile-first, section-based, bilingual (`ko` and `en`), and designed to reduce survey fatigue.
 - Drafts are client-side only until final submission. Keep drafts separated by `survey_id + participant_user_id`.
+- Drafts must never store Supabase service role keys, raw access/refresh tokens, or long-lived unnecessary personal raw payloads.
 - Final submit creates one `responses` row and many `answers` rows.
 - Store analytics-friendly values: stable option values, score values, topic keys, space keys, and image ratios. Do not store translated labels as answer values.
 - Image or floorplan points are stored with `x_ratio` and `y_ratio` in the inclusive `0..1` range.
@@ -37,7 +40,7 @@ View
   -> Query / Mutation Hook
   -> ParticipantApiController
   -> ParticipantPayloadMapper
-  -> ParticipantApiGateway
+  -> SupabaseParticipantApiGateway or HttpParticipantApiGateway
   -> Supabase Database / Auth / Storage
 ```
 
@@ -47,18 +50,19 @@ Rules:
 - Query hooks must call `ParticipantApiController`, not gateways or mappers directly.
 - Gateways own external IO and raw payload shapes.
 - Mappers own raw-to-domain and command-to-persistence conversions.
+- Supabase SDK belongs only inside `SupabaseParticipantApiGateway` and runtime wiring that remains hidden behind the gateway/controller.
 - Gateway replacement from Supabase to HTTP must not require view, hook, or controller rewrites.
 
 ## Implementation Order
 
-Follow the TDD phases unless the user narrows the task:
+Follow the TDD v2 phases unless the user narrows the task:
 
-1. Foundation: app shell, providers, query client, runtime, stores, public routes.
-2. Survey Renderer: public survey query, sections, progress, question components, locale fallback.
-3. Draft / Validation: React Hook Form, Zod schemas, autosave, restore banner, branch evaluator, low-score follow-up.
-4. Image Tagging: asset rendering, coordinate ratios, pins, tag metadata, edit/delete, max tag limits.
-5. Submission: payload mapper, Supabase insert/RPC, duplicate check, complete/error pages.
-6. E2E Hardening: mobile viewport, bilingual flow, draft restore, submit failure, final submit.
+1. Public Survey Read: gateway, mapper, public slug bundle, sections/questions/assets, locale rendering.
+2. Auth / Access: Google auth, `@handong.ac.kr`, access denied/closed/not-found, duplicate query.
+3. Survey Rendering: question renderer, question components, section navigation, validation.
+4. Draft Cache: draft key, localStorage, 5-10s debounce, visibility/beforeunload save, restore banner, submit-success delete.
+5. Submission: response insert plus answers bulk insert or `submit_survey_response` RPC, unique violation handling, complete page.
+6. Hardening: signed asset URL, RLS staging tests, E2E tests, edge cases.
 
 ## Testing Expectations
 
@@ -66,6 +70,8 @@ Follow the TDD phases unless the user narrows the task:
 - Add component tests for each question type and section navigation behavior.
 - Add route tests for auth/domain/duplicate/closed/not-found states.
 - Add Playwright coverage for the full happy path and at least one draft restore or submit failure path.
+- Add coverage for already-submitted routing and asset load failure.
+- Add database policy checks for RLS when using Supabase local or staging.
 - When changing a layer boundary, add a regression test or lint-like check that prevents Supabase imports from leaking into views.
 
 ## File Organization

@@ -12,20 +12,22 @@ Use this as the entry skill for broad Taglow Survey participant work. Keep the P
 Open these files before planning or editing:
 
 - `dev/Taglow_Survey_Participant_PRD.md`
-- `dev/Taglow_survey_Participant_TDD.md`
+- `dev/Taglow_survey_Participant_TDD_v2.md`
+
+`dev/Taglow_survey_Participant_TDD_v2.md` supersedes the older participant TDD. Use the older file only as historical context if v2 is silent.
 
 If the codebase exists, inspect `src/`, `package.json`, test setup, Supabase config, and existing route/provider patterns before proposing new structure.
 
 ## Phase order
 
-Follow the TDD phase order unless the user narrows the request:
+Follow the TDD v2 phase order unless the user narrows the request:
 
-1. Foundation: React/TypeScript app, Supabase Auth, runtime/provider, query client, Zustand stores, public survey route.
-2. Survey Renderer: public survey fetch, section progress UI, QuestionRenderer, scale/single/multi/ranking/text, locale fallback.
-3. Draft/Validation: React Hook Form structure, Zod schemas, autosave, restore banner, branch evaluator, low-score follow-up.
-4. Image Tagging: asset rendering, ratio coordinates, tag metadata, edit/delete, max-tag enforcement.
-5. Submission: payload mapper, Supabase insert/RPC, duplicate check, completion/error handling.
-6. E2E Hardening: Playwright flows, mobile viewport, bilingual paths, network failure.
+1. Public Survey Read: gateway, mapper, public slug bundle, sections/questions/assets, locale rendering.
+2. Auth / Access: Supabase Google Auth, `@handong.ac.kr`, access denied/closed/not-found, duplicate submission query.
+3. Survey Rendering: QuestionRenderer, question components, section navigation, validation.
+4. Draft Cache: localStorage draft key, 5-10s debounce, visibility/beforeunload save, restore banner, submit-success delete.
+5. Submission: response insert plus answers bulk insert or `submit_survey_response` RPC, unique violation handling, complete page.
+6. Hardening: signed asset URLs, RLS staging tests, E2E tests, edge cases.
 
 ## Dispatch map
 
@@ -59,10 +61,12 @@ Pass only the user request, target files, and PRD/TDD paths. Do not pass your in
 - Query and mutation hooks call `ParticipantApiController`, not gateways directly.
 - `ParticipantApiGateway` is replaceable: Supabase now, HTTP later.
 - Drafts stay client-side until final submit; delete only after successful submit.
+- Drafts must not store service role keys, raw access tokens, raw refresh tokens, or unnecessary long-lived personal raw payloads.
 - Final submit creates one `responses` row and many `answers` rows.
 - Image tagging stores `x_ratio` and `y_ratio` in the inclusive `0..1` range.
 - Email domain checks happen in UI flow and API/RLS or server boundary.
 - Duplicate submitted response per `(survey_id, participant_user_id)` is blocked.
+- Already submitted users route to `/survey/:publicSlug/already-submitted`.
 - Locale affects rendered text; answers are stored as language-independent values.
 
 ## Working loop
@@ -72,4 +76,3 @@ Pass only the user request, target files, and PRD/TDD paths. Do not pass your in
 3. Use the narrowest relevant skill and keep edits scoped.
 4. Add focused tests for the touched layer and at least one behavior-level regression when user-facing flow changes.
 5. Verify the boundary rules in "Non-negotiables" before handoff.
-

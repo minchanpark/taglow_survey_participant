@@ -11,9 +11,24 @@ This directory exposes the controller contract used by query hooks and runtime p
 ## Responsibilities
 
 - Define `ParticipantApiController`.
-- Implement controller methods by orchestrating gateway and mapper modules.
+- Implement session/auth, public survey, access check, duplicate check, asset URL, and submit use cases by orchestrating gateway and mapper modules.
 - Expose a React provider/hook only for controller access, not for business UI.
 - Normalize controller-level errors for pages and mutations.
+
+## Controller Contract
+
+Include these v2 use cases:
+
+```ts
+getCurrentSession(): Promise<ParticipantSession | null>;
+signInWithGoogle(command: SignInCommand): Promise<void>;
+signOut(): Promise<void>;
+getPublicSurvey(publicSlug: string): Promise<PublicSurvey>;
+checkAccess(publicSlug: string): Promise<SurveyAccessResult>;
+checkDuplicateSubmission(command: DuplicateSubmissionCommand): Promise<DuplicateSubmissionResult>;
+getAssetUrl(asset: SurveyAsset): Promise<string>;
+submitSurvey(command: SubmissionCommand): Promise<SubmissionResult>;
+```
 
 ## Rules
 
@@ -21,4 +36,4 @@ This directory exposes the controller contract used by query hooks and runtime p
 - Views should not instantiate controllers directly.
 - Do not import Supabase SDK here; inject a gateway from runtime.
 - Keep the public contract stable when changing gateway internals.
-
+- Controller should hide whether submit uses response+answers inserts or `submit_survey_response` RPC.

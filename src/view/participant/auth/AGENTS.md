@@ -14,6 +14,7 @@ This directory contains participant authentication pages.
 - Preserve return to the original public survey URL after login.
 - Explain the `@handong.ac.kr` restriction clearly.
 - Route non-Handong accounts to access denied.
+- Trigger sign-in through the participant controller/auth abstraction so Supabase Auth remains behind the API boundary.
 
 ## CSS Ownership
 
@@ -23,6 +24,6 @@ This directory contains participant authentication pages.
 
 ## Rules
 
-- Prefer invoking an auth/runtime abstraction instead of importing Supabase SDK directly in the page.
+- Prefer invoking a participant controller/auth runtime abstraction instead of importing Supabase SDK directly in the page.
 - Keep auth UI separate from survey question UI.
 - Do not perform duplicate-submission mapping here; use route guard/query/controller behavior.

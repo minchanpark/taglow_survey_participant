@@ -10,7 +10,7 @@ Use this skill for validation logic that sits between question UI, draft cache, 
 ## Read first
 
 - PRD sections: `10. Experience`, `11. Satisfaction/Importance`, `12. Low Satisfaction Follow-up`, `13-17. Question Types`, `24. Validation`.
-- TDD sections: `13. Question Rendering`, `15. Submission Payload`, `16. Validation`, `19. Test Strategy`.
+- TDD v2 sections: `13. Question Rendering`, `14. Validation`, `15. Submission Payload`, `16. Duplicate Prevention`, `20. Test Strategy`.
 
 ## Core shapes
 
@@ -40,8 +40,10 @@ Do not duplicate incompatible answer shapes in UI components.
 - `ranking` must contain no duplicate option values.
 - Required text must be non-blank after trimming.
 - `image_tag` points must respect max tag count, ratio bounds, required tag type, and required text.
-- `attention_check` should record whether the expected value matched.
+- `image_tag` answers must reference an existing `assetId`.
+- `attention_check` should be validated by `attentionCheckValidator.ts` and record whether the expected value matched.
 - Participant email must already be validated as `@handong.ac.kr` before submit.
+- Submission validation must confirm duplicate-submission query success before final submit proceeds.
 
 ## Branch evaluator
 
@@ -50,7 +52,7 @@ Implement `shouldShowQuestion` as a pure function:
 ```ts
 export function shouldShowQuestion(args: {
   question: PublicQuestion;
-  answersByQuestionId: Record<string, AnswerDraft>;
+  values: Record<string, unknown>;
 }): boolean;
 ```
 
@@ -81,8 +83,8 @@ Normalize before saving draft and before submit:
 ## Tests to add
 
 - Each question type has valid and invalid cases.
+- Attention-check expected value has pass/fail cases.
 - Branch evaluator hides and shows questions based on current answers.
 - Low-score requiredness changes with score and config.
 - Corrupted or unknown answer types fail validation with a routeable error.
 - Submission validation reports enough location data to send the user back to the failing section.
-

@@ -8,6 +8,8 @@ This directory contains participant survey feature components.
 - `SectionNavigator.css`
 - `QuestionRenderer.tsx`
 - `QuestionRenderer.css`
+- `ProfileQuestion.tsx`
+- `ProfileQuestion.css`
 - `ScaleQuestion.tsx`
 - `ScaleQuestion.css`
 - `SingleChoiceQuestion.tsx`
@@ -33,6 +35,7 @@ This directory contains participant survey feature components.
 - Keep `QuestionRenderer` exhaustive over supported question types.
 - Use plain participant wording for image/floorplan location selection.
 - Display low-score follow-up only when validation/branch logic says it is relevant.
+- `QuestionRenderer` supports v2 types: profile, scale, single_choice, multi_select, ranking, text, image_tag, attention_check.
 
 ## CSS Ownership
 
@@ -48,3 +51,4 @@ This directory contains participant survey feature components.
 - Do not import Supabase SDK, gateways, or mappers.
 - Question components should emit `AnswerDraft`-compatible values.
 - Keep mobile touch targets large and errors specific.
+- Image tag components should receive signed asset URLs or asset loading state through props/hooks, not construct storage URLs directly.

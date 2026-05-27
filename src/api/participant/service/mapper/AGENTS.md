@@ -5,8 +5,10 @@ This directory converts raw payloads to participant domain models and commands t
 ## Responsibilities
 
 - Map raw survey, section, question, option, and asset rows to `PublicSurvey`.
-- Apply locale fallback for rendered text through domain fields when appropriate.
-- Map `SubmitSurveyCommand` to a raw submit payload.
+- Convert `title_ko`/`title_en` and descriptions to `LocalizedText`.
+- Parse `questions.config` into question-type config where practical.
+- Map `SubmissionCommand` to response and answer insert payloads.
+- Extract profile answers into `responses` columns.
 - Expand image tag points into separate answer rows.
 - Preserve `topicKey`, `spaceKey`, `metricType`, and stable option values for analytics.
 
@@ -16,4 +18,3 @@ This directory converts raw payloads to participant domain models and commands t
 - Do not import React, TanStack Query, Zustand, or Supabase clients.
 - Do not store translated display labels as answer values.
 - Cover every question type in mapper tests.
-

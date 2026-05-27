@@ -8,12 +8,14 @@ This directory contains system and access-state pages.
 - `SurveyNotFoundPage.css`
 - `SurveyClosedPage.tsx`
 - `SurveyClosedPage.css`
+- `AlreadySubmittedPage.tsx`
+- `AlreadySubmittedPage.css`
 - `AccessDeniedPage.tsx`
 - `AccessDeniedPage.css`
 
 ## Responsibilities
 
-- Explain not found, closed, access denied, and duplicate-style terminal states.
+- Explain not found, closed/archived, already submitted, access denied, and duplicate-style terminal states.
 - Keep messages clear, short, and participant-friendly.
 - Provide retry or login-again actions where appropriate.
 
@@ -29,3 +31,4 @@ This directory contains system and access-state pages.
 - No raw error dumps.
 - No Supabase SDK imports.
 - Do not expose admin-only details to participants.
+- Already-submitted copy should explain that edits require contacting the survey owner.

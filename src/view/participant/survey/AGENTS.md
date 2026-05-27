@@ -23,6 +23,7 @@ This directory contains participant survey pages.
 - Own React Hook Form setup for question values.
 - Coordinate draft autosave/restore with draft storage and stores.
 - Submit only validated commands.
+- Load image/floorplan assets through signed asset URL controller/query behavior.
 
 ## CSS Ownership
 
@@ -37,3 +38,4 @@ This directory contains participant survey pages.
 - Do not put reusable primitive styling here when it belongs in `components/`.
 - Do not delete draft until submit mutation succeeds.
 - Keep network failure behavior retryable and draft-preserving.
+- If submit reports `ALREADY_SUBMITTED`, navigate to `/survey/:publicSlug/already-submitted`.

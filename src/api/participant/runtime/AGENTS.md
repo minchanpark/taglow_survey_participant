@@ -17,5 +17,5 @@ This directory creates the concrete participant API runtime.
 
 - Integration setup belongs here, not in views.
 - Supabase client wiring may live here only when it remains hidden behind gateways/controllers.
+- Do not expose service role keys or server-only secrets to browser runtime.
 - Keep runtime creation testable by allowing fake gateways/controllers in tests.
-

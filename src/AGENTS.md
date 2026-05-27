@@ -30,6 +30,7 @@ Do not import upward from lower layers. Do not let `components`, `utils`, or `st
 ## Boundary Rules
 
 - Supabase SDK is allowed only in gateway/runtime-style integration files.
+- Supabase SDK must not escape `SupabaseParticipantApiGateway`; runtime may only wire dependencies behind that gateway/controller boundary.
 - React Hook Form value ownership belongs to survey pages/components, not Zustand.
 - Zustand stores hold UI/progress state, not raw server state.
 - TanStack Query owns public survey data, duplicate checks, image asset metadata, and submit mutation state.

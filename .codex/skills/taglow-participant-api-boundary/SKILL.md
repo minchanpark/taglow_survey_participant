@@ -9,7 +9,7 @@ Use this skill for the participant data layer. The participant view must remain 
 
 ## Read first
 
-- TDD sections: `6. Data Flow`, `7. Database`, `8. Domain Model`, `9. ParticipantApiGateway`, `10. ParticipantApiController`, `11. Query Hook`, `15. Submission Payload`, `17. Auth/RLS`, `21. Completion Criteria`.
+- TDD v2 sections: `6. Database`, `7. Domain Model`, `8. Participant API Gateway Interface`, `9. Payload Mapper`, `10. Participant Controller Use Cases`, `11. Query Key`, `15. Submission Payload`, `16. Duplicate Prevention`, `17. Access Control and Security`, `18. Storage Image Loading`, `19. Error Handling`.
 - PRD sections: `22. Data Storage`, `23. Admin Output Mapping`, `24. Validation`.
 
 ## Target structure
@@ -29,7 +29,7 @@ src/api/participant/
 
 ## Boundary rules
 
-- Domain model files expose camelCase participant concepts: `PublicSurvey`, `PublicSurveySection`, `PublicQuestion`, `AnswerDraft`, `SubmitSurveyCommand`.
+- Domain model files expose camelCase participant concepts: `ParticipantSession`, `LocalizedText`, `PublicSurvey`, `PublicSurveySection`, `PublicQuestion`, `SurveyAsset`, `AnswerDraft`, `SubmissionCommand`.
 - Gateway files own raw Supabase/HTTP payloads and table names.
 - Mapper files convert raw rows to domain models and commands to persistence payloads.
 - Controller files orchestrate gateway calls, mapper calls, duplicate checks, and error normalization.
@@ -38,13 +38,25 @@ src/api/participant/
 
 ## Gateway contract
 
-Keep this shape stable:
+Keep this TDD v2 shape stable:
 
 ```ts
 export interface ParticipantApiGateway {
-  fetchPublicSurvey(publicSlug: string): Promise<RawPublicSurvey>;
-  fetchDuplicateSubmission(args: RawDuplicateSubmissionArgs): Promise<RawDuplicateSubmissionResult>;
-  submitSurvey(payload: RawSubmitSurveyPayload): Promise<RawSubmissionResult>;
+  getSession(): Promise<RawSession | null>;
+  signInWithGoogle(redirectTo: string): Promise<void>;
+  signOut(): Promise<void>;
+  fetchPublicSurveyBySlug(publicSlug: string): Promise<RawPublicSurveyBundle>;
+  checkDuplicateSubmission(args: {
+    surveyId: string;
+    participantUserId: string;
+  }): Promise<RawDuplicateSubmissionResult>;
+  createResponse(payload: RawCreateResponsePayload): Promise<RawResponse>;
+  createAnswers(payloads: RawCreateAnswerPayload[]): Promise<RawAnswer[]>;
+  submitSurveyResponse?(payload: RawSubmitSurveyPayload): Promise<RawSubmitSurveyResult>;
+  createSignedAssetUrl(args: {
+    bucket: string;
+    path: string;
+  }): Promise<string>;
 }
 ```
 
@@ -72,21 +84,25 @@ POST /api/surveys/:surveyId/responses
 
 ## Submit transaction
 
-Prefer `submit_survey_response(payload jsonb)` RPC when present so `responses` and `answers` are written transactionally. If RPC is not available yet:
+Prefer `submit_survey_response(payload jsonb)` RPC before launch so `responses` and `answers` are written transactionally. Initial development may use response insert plus answers bulk insert:
 
 1. Insert `responses` for the authenticated user.
 2. Bulk insert `answers` with the returned `response_id`.
-3. Normalize database errors into API errors the UI can route: not found, closed, access denied, duplicate, validation, network/unknown.
-4. Do not delete local draft here; draft cleanup belongs to mutation success handling.
+3. If answers insert fails after response creation, mark the response as discarded or route a recoverable `SUBMISSION_FAILED`.
+4. Normalize database errors into API errors the UI can route: not found, closed, access denied, already submitted, validation, asset load, draft restore, network/unknown.
+5. Do not delete local draft here; draft cleanup belongs to mutation success handling.
 
 ## RLS and constraints
 
 When adding SQL, preserve these invariants:
 
 - Published surveys are readable only by authenticated `@handong.ac.kr` users, or through a server endpoint that performs equivalent validation.
+- `survey_sections`, `questions`, and `survey_assets` are readable only when their survey is published.
 - Participants can insert only their own `responses`.
 - Participants can insert `answers` only for their own response.
 - Add or document a unique submitted response constraint on `(survey_id, participant_user_id)` where `status='submitted'`.
+- Participant code must not access `admin_members`.
+- Browser code must not store service role keys or raw access/refresh tokens in draft storage.
 
 ## Sub-agent routing
 
@@ -94,7 +110,7 @@ When available, use `taglow-participant-architect` before large data-layer edits
 
 ## Tests to add
 
-- Mapper: raw survey rows to `PublicSurvey`, locale fallback, submit command to raw payload.
-- Controller: public fetch, duplicate check, submit success, duplicate/closed/error paths.
-- Gateway: response insert plus answers bulk insert or RPC payload.
+- Mapper: raw survey bundle rows to `PublicSurvey`, `LocalizedText`, response payload, answer payloads, image tag payloads.
+- Controller: session, sign-in, public fetch, access check, duplicate check, asset URL, submit success, already-submitted/closed/error paths.
+- Gateway: session/auth, public bundle fetch, signed asset URL, response insert plus answers bulk insert or RPC payload.
 - Boundary regression: no Supabase imports from `src/view`, `src/components`, or query hooks.

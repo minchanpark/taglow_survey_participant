@@ -10,7 +10,7 @@ Use this skill for the public survey entry flow and participant access control.
 ## Read first
 
 - PRD sections: `4. Participant Flow`, `5. Login and Access Control`, `7. Start Screen`, `24. Validation`, `26. Auth Tests`.
-- TDD sections: `5. Routing`, `17. Auth / Access Control`, `18. Error Handling`, `19. Test Strategy`.
+- TDD v2 sections: `5. Routing`, `10. Participant Controller Use Cases`, `16. Duplicate Prevention`, `17. Access Control and Security`, `19. Error Handling`, `20. Test Strategy`.
 
 ## Routes
 
@@ -24,6 +24,7 @@ Implement or preserve the TDD route model:
 /survey/:publicSlug/review
 /survey/:publicSlug/complete
 /survey/:publicSlug/closed
+/survey/:publicSlug/already-submitted
 /survey/:publicSlug/access-denied
 ```
 
@@ -33,10 +34,11 @@ Route redirects may vary by framework, but URLs should remain stable enough for 
 
 Apply guards in this order so failures route to the right screen:
 
-1. `RequirePublicSurvey`: public slug exists and survey is `published`.
-2. `RequireParticipantAuth`: Supabase session exists for intro and later routes.
-3. `RequireHandongEmail`: session email ends with `@handong.ac.kr`.
-4. `PreventDuplicateSubmission`: submitted user cannot answer again.
+1. `RequirePublicSurvey`: public slug exists.
+2. `RequirePublishedSurvey`: survey status is `published`; `closed` or `archived` routes to closed.
+3. `RequireParticipantAuth`: Supabase session exists for intro and later routes.
+4. `RequireHandongEmail`: session email ends with `@handong.ac.kr`.
+5. `PreventDuplicateSubmission`: submitted user routes to already-submitted.
 
 Keep duplicate-submission checks out of purely public/not-found paths until user identity is known.
 
@@ -46,7 +48,7 @@ Keep duplicate-submission checks out of purely public/not-found paths until user
 2. Login page starts Supabase Google OAuth with a return target for the same public slug.
 3. After callback/session hydration, validate email domain.
 4. If valid, check duplicate submission.
-5. Route to intro or restore prompt, then sections.
+5. If already submitted, route to `/survey/:publicSlug/already-submitted`; otherwise route to intro or restore prompt, then sections.
 
 ## Domain validation
 
@@ -60,7 +62,7 @@ Keep duplicate-submission checks out of purely public/not-found paths until user
 - `SurveyNotFoundPage`: slug missing or inaccessible.
 - `SurveyClosedPage`: survey exists but not published/respondable.
 - `AccessDeniedPage`: non-Handong account.
-- Duplicate submitted state: complete page or clear duplicate notice.
+- `AlreadySubmittedPage`: duplicate submitted state.
 
 Use participant-friendly language. For Korean, prefer:
 
@@ -75,6 +77,6 @@ Use participant-friendly language. For Korean, prefer:
 - `@handong.ac.kr` user can continue.
 - Non-Handong Google account sees access denied.
 - Existing submitted user is blocked.
+- Existing submitted user sees already-submitted route/page.
 - OAuth return preserves the original public slug.
 - Query hooks/controllers are mocked in route tests; do not import Supabase in view tests.
-

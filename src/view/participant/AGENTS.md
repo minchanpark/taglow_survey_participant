@@ -7,6 +7,7 @@ This directory contains the participant survey experience.
 - Implement the public URL/QR flow, login gate, survey intro, section answering, review, complete, and system states.
 - Keep UX mobile-first, section-based, and bilingual.
 - Use the participant API query/mutation hooks for server state.
+- Handle already-submitted as its own terminal participant state.
 
 ## CSS Ownership
 
@@ -21,3 +22,4 @@ This directory contains the participant survey experience.
 - Do not import service/gateway/mapper modules directly.
 - Do not store translated labels as answers.
 - Treat draft restore and final submit as separate flows.
+- Route unique-violation submit failures to already-submitted instead of showing a generic error.
