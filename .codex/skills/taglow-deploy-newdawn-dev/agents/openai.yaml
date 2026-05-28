@@ -1,0 +1,7 @@
+interface:
+  display_name: "Deploy Newdawn Dev"
+  short_description: "Push Taglow to Newdawn dev"
+  default_prompt: "Use $taglow-deploy-newdawn-dev to deploy the current Taglow participant commit to Team-Newdawn dev without changing origin."
+
+policy:
+  allow_implicit_invocation: true
