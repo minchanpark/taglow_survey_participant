@@ -11,7 +11,7 @@ ARCHIVE_PATH=""
 COMPOSE_SOURCE=""
 HOST_PORT="3000"
 CONTAINER_PORT="3000"
-CANDIDATE_PORT="3001"
+CANDIDATE_PORT=""
 HEALTHCHECK_PATH="/healthz"
 
 usage() {
@@ -185,6 +185,17 @@ cleanup_candidate() {
   docker_cmd rm -f "$CANDIDATE_NAME" >/dev/null 2>&1 || true
 }
 
+resolve_candidate_url() {
+  local port_mapping
+  local resolved_port
+
+  port_mapping="$(docker_cmd port "$CANDIDATE_NAME" "${CONTAINER_PORT}/tcp" | awk -F: 'NR==1 {print $NF}')"
+  [[ -n "$port_mapping" ]] || die "Could not determine candidate container host port."
+
+  resolved_port="$port_mapping"
+  CANDIDATE_HEALTHCHECK_URL="http://127.0.0.1:${resolved_port}${HEALTHCHECK_PATH}"
+}
+
 write_runtime_env() {
   local target_tag="$1"
   local tmp_file
@@ -229,19 +240,46 @@ else
 fi
 
 cleanup_candidate
-log "Starting candidate container on port ${CANDIDATE_PORT}."
-docker_cmd run -d \
-  --name "$CANDIDATE_NAME" \
-  --pull never \
-  --restart no \
-  --read-only \
-  --tmpfs /var/cache/nginx \
-  --tmpfs /var/run \
-  --tmpfs /tmp \
-  --cap-drop ALL \
-  --security-opt no-new-privileges:true \
-  -p "127.0.0.1:${CANDIDATE_PORT}:${CONTAINER_PORT}" \
-  "$IMAGE_REF" >/dev/null
+if [[ -n "$CANDIDATE_PORT" ]]; then
+  log "Starting candidate container on fixed port ${CANDIDATE_PORT}."
+  docker_cmd run -d \
+    --name "$CANDIDATE_NAME" \
+    --pull never \
+    --restart no \
+    --read-only \
+    --tmpfs /var/cache/nginx \
+    --tmpfs /var/run \
+    --tmpfs /tmp \
+    --cap-drop ALL \
+    --security-opt no-new-privileges:true \
+    -p "127.0.0.1:${CANDIDATE_PORT}:${CONTAINER_PORT}" \
+    "$IMAGE_REF" >/dev/null
+else
+  log "Starting candidate container on an ephemeral loopback port."
+  docker_cmd run -d \
+    --name "$CANDIDATE_NAME" \
+    --pull never \
+    --restart no \
+    --read-only \
+    --tmpfs /var/cache/nginx \
+    --tmpfs /var/run \
+    --tmpfs /tmp \
+    --cap-drop ALL \
+    --security-opt no-new-privileges:true \
+    -p "127.0.0.1::${CONTAINER_PORT}" \
+    "$IMAGE_REF" >/dev/null
+  resolve_candidate_url
+fi
+
+if [[ -n "$CANDIDATE_PORT" ]]; then
+  CANDIDATE_HEALTHCHECK_URL="http://127.0.0.1:${CANDIDATE_PORT}${HEALTHCHECK_PATH}"
+fi
+
+docker_cmd inspect "$CANDIDATE_NAME" >/dev/null
+
+if [[ -z "$CANDIDATE_PORT" ]]; then
+  log "Candidate health check target: ${CANDIDATE_HEALTHCHECK_URL}"
+fi
 
 if ! wait_for_url "$CANDIDATE_HEALTHCHECK_URL" 30 2; then
   docker_cmd logs --tail 100 "$CANDIDATE_NAME" || true
