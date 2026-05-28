@@ -6,6 +6,12 @@ on:
       - main
     types:
       - closed
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: Manual rerun reason
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -16,7 +22,7 @@ concurrency:
 
 jobs:
   deploy:
-    if: github.event.pull_request.merged == true
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
