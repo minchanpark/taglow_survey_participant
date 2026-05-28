@@ -1,7 +1,7 @@
 import { QuestionShell } from './QuestionShell';
 import type { QuestionComponentProps } from './questionComponentTypes';
 import { getDisplayOptions } from './questionOptions';
-import './MultiSelectQuestion.css';
+import './css/MultiSelectQuestion.css';
 
 type MultiSelectValue = {
   selectedOptions?: string[];

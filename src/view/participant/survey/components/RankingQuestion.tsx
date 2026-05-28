@@ -1,7 +1,7 @@
 import { QuestionShell } from './QuestionShell';
 import type { QuestionComponentProps } from './questionComponentTypes';
 import { getDisplayOptions } from './questionOptions';
-import './RankingQuestion.css';
+import './css/RankingQuestion.css';
 
 type RankingItem = {
   rank: number;

@@ -6,7 +6,7 @@ import { Button } from '../../../../components/Button';
 import { calculateImageRatio } from '../../../../utils/imageRatio';
 import { QuestionShell } from './QuestionShell';
 import type { QuestionComponentProps } from './questionComponentTypes';
-import './ImageTagQuestion.css';
+import './css/ImageTagQuestion.css';
 
 type ImageTagValue = {
   points?: ImageTagPoint[];

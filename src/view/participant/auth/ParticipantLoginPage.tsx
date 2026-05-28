@@ -6,7 +6,7 @@ import { Button } from '../../../components/Button';
 import { Message } from '../../../components/Message';
 import { useParticipantLocaleStore } from '../../../store/participantLocaleStore';
 import { readLocalizedText, resolveSurveyDefaultLocale } from '../../../utils/i18nText';
-import './ParticipantLoginPage.css';
+import './css/ParticipantLoginPage.css';
 
 export function ParticipantLoginPage() {
   const { publicSlug = '' } = useParams();

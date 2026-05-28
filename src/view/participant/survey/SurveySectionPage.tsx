@@ -18,7 +18,7 @@ import { formatShortDateTime } from '../../../utils/dateTime';
 import { readLocalizedText, resolveSurveyDefaultLocale } from '../../../utils/i18nText';
 import { DraftRestoreBanner } from './components/DraftRestoreBanner';
 import { QuestionRenderer } from './components/QuestionRenderer';
-import './SurveySectionPage.css';
+import './css/SurveySectionPage.css';
 
 const DRAFT_SCHEMA_VERSION = 1;
 const AUTOSAVE_DELAY_MS = 6500;

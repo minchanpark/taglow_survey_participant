@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom';
 
 import { ButtonLink } from '../../../components/Button';
 import { Message } from '../../../components/Message';
-import './SurveyCompletePage.css';
+import './css/SurveyCompletePage.css';
 
 export function SurveyCompletePage() {
   const { publicSlug = '' } = useParams();

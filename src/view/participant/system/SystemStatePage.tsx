@@ -1,7 +1,7 @@
 import type { PropsWithChildren } from 'react';
 
 import { ButtonLink } from '../../../components/Button';
-import './SystemStatePage.css';
+import './css/SystemStatePage.css';
 
 type SystemStatePageProps = PropsWithChildren<{
   eyebrow: string;

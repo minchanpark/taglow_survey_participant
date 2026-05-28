@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 
 import { SystemStatePage } from './SystemStatePage';
-import './SurveyClosedPage.css';
+import './css/SurveyClosedPage.css';
 
 export function SurveyClosedPage() {
   const { publicSlug = '' } = useParams();

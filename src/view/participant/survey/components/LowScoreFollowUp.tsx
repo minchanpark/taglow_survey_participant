@@ -1,4 +1,4 @@
-import './LowScoreFollowUp.css';
+import './css/LowScoreFollowUp.css';
 
 type LowScoreFollowUpProps = {
   scoreValue: number | undefined;

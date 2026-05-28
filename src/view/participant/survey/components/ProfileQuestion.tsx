@@ -1,11 +1,19 @@
 import { Select } from '../../../../components/Select';
+import { normalizeProfileRecord, resolveProfileFieldKey, type ProfileFieldKey } from '../../../../utils/profileFields';
 import { QuestionShell } from './QuestionShell';
 import type { QuestionComponentProps } from './questionComponentTypes';
-import './ProfileQuestion.css';
+import { getDisplayOptions } from './questionOptions';
+import './css/ProfileQuestion.css';
 
-type ProfileValue = Record<string, string | undefined>;
+type ProfileValue = Partial<Record<ProfileFieldKey, string>>;
 
-const fieldGroups = [
+type ProfileFieldGroup = {
+  key: ProfileFieldKey;
+  label: string;
+  options: Array<{ value: string; label: string }>;
+};
+
+const fieldGroups: ProfileFieldGroup[] = [
   {
     key: 'gender',
     label: '성별',
@@ -82,15 +90,18 @@ const fieldGroups = [
 
 export function ProfileQuestion(props: QuestionComponentProps<unknown>) {
   const value = readProfileValue(props.value);
+  const profileFieldKey = resolveProfileFieldKey(props.question);
+  const fields = profileFieldKey ? fieldGroups.filter((field) => field.key === profileFieldKey) : fieldGroups;
+  const configuredOptions = getDisplayOptions(props.question, props.locale, props.fallbackLocale);
 
   return (
     <QuestionShell question={props.question} locale={props.locale} fallbackLocale={props.fallbackLocale} error={props.error}>
       <div className="profile-question">
-        {fieldGroups.map((field) => (
+        {fields.map((field) => (
           <Select
             key={field.key}
             label={field.label}
-            options={field.options}
+            options={profileFieldKey && configuredOptions.length > 0 ? configuredOptions : field.options}
             value={value[field.key] ?? ''}
             onChange={(event) => props.onChange({ ...value, [field.key]: event.target.value })}
           />
@@ -101,5 +112,5 @@ export function ProfileQuestion(props: QuestionComponentProps<unknown>) {
 }
 
 function readProfileValue(value: unknown): ProfileValue {
-  return typeof value === 'object' && value !== null && !Array.isArray(value) ? (value as ProfileValue) : {};
+  return typeof value === 'object' && value !== null && !Array.isArray(value) ? (normalizeProfileRecord(value as Record<string, unknown>) as ProfileValue) : {};
 }

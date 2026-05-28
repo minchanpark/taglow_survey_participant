@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 
 import { SystemStatePage } from './SystemStatePage';
-import './SurveyNotFoundPage.css';
+import './css/SurveyNotFoundPage.css';
 
 export function SurveyNotFoundPage() {
   const { publicSlug } = useParams();

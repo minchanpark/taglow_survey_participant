@@ -1,5 +1,6 @@
 import type { AnswerInput, ImageTagPoint, PublicQuestion, PublicSurvey, PublicSurveySection, RespondentProfile } from '../api/participant';
 import { validateAttentionCheck } from '../api/participant/service/validation/attentionCheckValidator';
+import { normalizeProfileRecord, resolveProfileFieldKey } from './profileFields';
 
 export type NormalizedAnswerInput = Omit<AnswerInput, 'surveyId' | 'sectionId'>;
 
@@ -18,7 +19,7 @@ export function normalizeAnswerInput(question: PublicQuestion, value: unknown): 
 
   switch (question.questionType) {
     case 'profile':
-      return [{ ...base, valueJson: readRecord(value) }];
+      return [{ ...base, valueJson: readProfileAnswerRecord(question, value) }];
     case 'experience':
       return [{ ...base, valueJson: readRecord(value) }];
     case 'scale': {
@@ -129,8 +130,16 @@ export function buildSubmissionAnswers(survey: PublicSurvey, values: Record<stri
 }
 
 export function extractRespondentProfile(survey: PublicSurvey, values: Record<string, unknown>): RespondentProfile {
-  const profileQuestion = survey.sections.flatMap((section) => section.questions).find((question) => question.questionType === 'profile');
-  const profile = readRecord(profileQuestion ? values[profileQuestion.id] : undefined);
+  const profile = survey.sections
+    .flatMap((section) => section.questions)
+    .filter((question) => question.questionType === 'profile')
+    .reduce<Record<string, unknown>>(
+      (merged, question) => ({
+        ...merged,
+        ...readProfileAnswerRecord(question, values[question.id]),
+      }),
+      {},
+    );
 
   return {
     gender: readString(profile.gender),
@@ -147,7 +156,7 @@ export function extractRespondentProfile(survey: PublicSurvey, values: Record<st
 export function isAnsweredValue(question: PublicQuestion, value: unknown): boolean {
   switch (question.questionType) {
     case 'profile':
-      return Object.values(readRecord(value)).some((item) => readString(item));
+      return Object.values(readProfileAnswerRecord(question, value)).some((item) => readString(item));
     case 'experience':
       return Boolean(readString(readRecord(value).experienceStatus));
     case 'scale':
@@ -174,6 +183,15 @@ export function findMissingRequiredQuestions(section: PublicSurveySection, value
 
 function readRecord(value: unknown): Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
+}
+
+function readProfileAnswerRecord(question: PublicQuestion, value: unknown): Record<string, unknown> {
+  if (typeof value === 'string' || typeof value === 'number') {
+    const fieldKey = resolveProfileFieldKey(question);
+    return fieldKey ? { [fieldKey]: String(value) } : {};
+  }
+
+  return normalizeProfileRecord(readRecord(value));
 }
 
 function readString(value: unknown): string | undefined {

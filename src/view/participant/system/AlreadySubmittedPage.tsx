@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 
 import { SystemStatePage } from './SystemStatePage';
-import './AlreadySubmittedPage.css';
+import './css/AlreadySubmittedPage.css';
 
 export function AlreadySubmittedPage() {
   const { publicSlug = '' } = useParams();

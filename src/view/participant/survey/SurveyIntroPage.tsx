@@ -13,7 +13,7 @@ import { buildDraftKey } from '../../../utils/draftKey';
 import { formatShortDateTime } from '../../../utils/dateTime';
 import { readLocalizedText, resolveSurveyDefaultLocale } from '../../../utils/i18nText';
 import { DraftRestoreBanner } from './components/DraftRestoreBanner';
-import './SurveyIntroPage.css';
+import './css/SurveyIntroPage.css';
 
 const DRAFT_SCHEMA_VERSION = 1;
 

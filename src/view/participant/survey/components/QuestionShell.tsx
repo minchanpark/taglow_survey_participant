@@ -2,7 +2,7 @@ import type { PropsWithChildren } from 'react';
 
 import type { Locale, PublicQuestion } from '../../../../api/participant';
 import { readLocalizedText } from '../../../../utils/i18nText';
-import './QuestionShell.css';
+import './css/QuestionShell.css';
 
 type QuestionShellProps = PropsWithChildren<{
   question: PublicQuestion;

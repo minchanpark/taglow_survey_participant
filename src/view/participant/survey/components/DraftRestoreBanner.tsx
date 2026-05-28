@@ -1,5 +1,5 @@
 import { Button } from '../../../../components/Button';
-import './DraftRestoreBanner.css';
+import './css/DraftRestoreBanner.css';
 
 type DraftRestoreBannerProps = {
   updatedAt: string;

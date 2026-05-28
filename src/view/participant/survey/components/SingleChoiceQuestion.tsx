@@ -1,7 +1,7 @@
 import { QuestionShell } from './QuestionShell';
 import type { QuestionComponentProps } from './questionComponentTypes';
 import { getDisplayOptions } from './questionOptions';
-import './SingleChoiceQuestion.css';
+import './css/SingleChoiceQuestion.css';
 
 export function SingleChoiceQuestion(props: QuestionComponentProps<unknown>) {
   const value = typeof props.value === 'string' ? props.value : '';

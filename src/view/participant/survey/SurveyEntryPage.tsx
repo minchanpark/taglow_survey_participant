@@ -6,7 +6,7 @@ import { Message } from '../../../components/Message';
 import { useParticipantLocaleStore } from '../../../store/participantLocaleStore';
 import { isAllowedParticipantEmail } from '../../../utils/authDomain';
 import { readLocalizedText, resolveSurveyDefaultLocale } from '../../../utils/i18nText';
-import './SurveyEntryPage.css';
+import './css/SurveyEntryPage.css';
 
 export function SurveyEntryPage() {
   const { publicSlug = '' } = useParams();

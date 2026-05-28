@@ -1,6 +1,6 @@
 import { QuestionShell } from './QuestionShell';
 import type { QuestionComponentProps } from './questionComponentTypes';
-import './TextQuestion.css';
+import './css/TextQuestion.css';
 
 type TextValue = {
   topicValue?: string;

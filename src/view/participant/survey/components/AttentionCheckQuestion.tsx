@@ -1,7 +1,7 @@
 import { QuestionShell } from './QuestionShell';
 import type { QuestionComponentProps } from './questionComponentTypes';
 import { getDisplayOptions } from './questionOptions';
-import './AttentionCheckQuestion.css';
+import './css/AttentionCheckQuestion.css';
 
 export function AttentionCheckQuestion(props: QuestionComponentProps<unknown>) {
   const value = typeof props.value === 'string' ? props.value : '';

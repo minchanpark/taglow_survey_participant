@@ -1,7 +1,7 @@
 import { useParams } from 'react-router-dom';
 
 import { SystemStatePage } from './SystemStatePage';
-import './AccessDeniedPage.css';
+import './css/AccessDeniedPage.css';
 
 export function AccessDeniedPage() {
   const { publicSlug = '' } = useParams();

@@ -1,7 +1,7 @@
 import { QuestionShell } from './QuestionShell';
 import type { QuestionComponentProps } from './questionComponentTypes';
 import { getDefaultOptions, getDisplayOptions } from './questionOptions';
-import './ExperienceQuestion.css';
+import './css/ExperienceQuestion.css';
 
 type ExperienceValue = {
   experienceStatus?: string;

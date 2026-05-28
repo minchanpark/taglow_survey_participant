@@ -1,7 +1,7 @@
 import { QuestionShell } from './QuestionShell';
 import type { QuestionComponentProps } from './questionComponentTypes';
 import { LowScoreFollowUp } from './LowScoreFollowUp';
-import './ScaleQuestion.css';
+import './css/ScaleQuestion.css';
 
 type ScaleValue = {
   scoreValue?: number;

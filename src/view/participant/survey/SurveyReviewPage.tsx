@@ -11,7 +11,7 @@ import { useParticipantProgressStore } from '../../../store/participantProgressS
 import { buildSubmissionAnswers, extractRespondentProfile, findMissingRequiredQuestions } from '../../../utils/answerNormalizer';
 import { buildDraftKey } from '../../../utils/draftKey';
 import { readLocalizedText, resolveSurveyDefaultLocale } from '../../../utils/i18nText';
-import './SurveyReviewPage.css';
+import './css/SurveyReviewPage.css';
 
 export function SurveyReviewPage() {
   const { publicSlug = '' } = useParams();
