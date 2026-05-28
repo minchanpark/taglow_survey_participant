@@ -49,7 +49,7 @@ git diff --stat newdawn-participant/main...newdawn-participant/dev
 
 If there are no commits on `dev` ahead of `main`, report that there is nothing to release and stop.
 
-If `main` has commits that are not in `dev`, stop and explain the divergence before opening or merging a PR.
+If the log shows commits on `main` that are not in `dev`, do not stop solely for that reason. Previous PR merge commits can make `main` appear ahead while the content diff is still clean. Note the divergence, continue to PR inspection, and let GitHub's mergeability state decide. Stop only if the PR reports conflicts or branch protection blockers.
 
 ## Create Or Reuse PR
 
@@ -98,7 +98,8 @@ Merge only when the user explicitly asked to merge/release, not when they only a
 Before merging:
 
 - Ensure the PR is not draft.
-- Ensure `mergeStateStatus` is not `DIRTY`, `BLOCKED`, or `UNKNOWN`.
+- Ensure `mergeStateStatus` is not `DIRTY` or `BLOCKED`.
+- If `mergeStateStatus` is `UNKNOWN`, wait briefly and re-check once before deciding.
 - If status checks exist, ensure required checks are passing.
 - If GitHub reports branch protection blockers, stop and report them.
 
