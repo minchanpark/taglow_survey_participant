@@ -5,16 +5,9 @@ import { useAssetUrlQuery, useParticipantQuestionImageUploadMutation } from '../
 import { Button } from '../../../../components/Button';
 import { calculateImageRatio } from '../../../../utils/imageRatio';
 import { QuestionShell } from './QuestionShell';
+import { getImageTagOptions } from './imageTagOptions';
 import type { QuestionComponentProps } from './questionComponentTypes';
-import { getDisplayOptions } from './questionOptions';
 import './css/ImageTagQuestion.css';
-
-type TagTypeOption = Readonly<{
-  value: string;
-  label: string;
-}>;
-
-const fallbackTagTypes: TagTypeOption[] = [{ value: 'suggestion', label: '건의' }];
 
 export function ParticipantImageTagQuestion(props: QuestionComponentProps<unknown>) {
   const imageRef = useRef<HTMLImageElement | null>(null);
@@ -23,7 +16,7 @@ export function ParticipantImageTagQuestion(props: QuestionComponentProps<unknow
   const value = readParticipantImageTagValue(props.value);
   const points = value.points ?? [];
   const maxTags = readNumber(props.question.config.maxTags) ?? readNumber(props.question.validation.maxSelections) ?? 3;
-  const tagTypes = getParticipantTagTypes(props);
+  const tagTypes = getImageTagOptions(props.question, props.locale, props.fallbackLocale);
   const accept = getAcceptAttribute(props.question.config.acceptedMimeTypes);
   const maxFileSizeMb = readNumber(props.question.config.maxFileSizeMb) ?? 10;
   const isTagTextRequired = props.question.validation.requiredTagText === true || props.question.config.requireText === true;
@@ -85,7 +78,7 @@ export function ParticipantImageTagQuestion(props: QuestionComponentProps<unknow
           id: createClientId(),
           xRatio: ratio.xRatio,
           yRatio: ratio.yRatio,
-          tagType: tagTypes[0]?.value ?? fallbackTagTypes[0].value,
+          tagType: tagTypes[0].value,
           textValue: '',
         },
       ],
@@ -156,7 +149,7 @@ export function ParticipantImageTagQuestion(props: QuestionComponentProps<unknow
                 <span>카테고리</span>
                 <select
                   aria-label={`${index + 1}번 위치 카테고리`}
-                  value={point.tagType || tagTypes[0]?.value || fallbackTagTypes[0].value}
+                  value={point.tagType || tagTypes[0].value}
                   onChange={(event) => updatePoint(index, { tagType: event.target.value })}
                 >
                   {tagTypes.map((item) => (
@@ -185,18 +178,6 @@ export function ParticipantImageTagQuestion(props: QuestionComponentProps<unknow
 
 function readParticipantImageTagValue(value: unknown): ParticipantImageTagValue {
   return typeof value === 'object' && value !== null && !Array.isArray(value) ? (value as ParticipantImageTagValue) : {};
-}
-
-function getParticipantTagTypes(props: QuestionComponentProps<unknown>): TagTypeOption[] {
-  const configTagTypes = readStringArray(props.question.config.tagTypes);
-  const configCategories = configTagTypes.length > 0 ? configTagTypes : readStringArray(props.question.config.categories);
-
-  if (configCategories.length > 0) {
-    return configCategories.map((item) => ({ value: item, label: item }));
-  }
-
-  const options = getDisplayOptions(props.question, props.locale, props.fallbackLocale);
-  return options.length > 0 ? options : fallbackTagTypes;
 }
 
 function toUploadedAsset(value: ParticipantImageTagValue, surveyId: string): SurveyAsset | undefined {

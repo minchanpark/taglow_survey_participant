@@ -5,6 +5,7 @@ import { useAssetUrlQuery } from '../../../../api/participant';
 import { Button } from '../../../../components/Button';
 import { calculateImageRatio } from '../../../../utils/imageRatio';
 import { QuestionShell } from './QuestionShell';
+import { getImageTagOptions } from './imageTagOptions';
 import type { QuestionComponentProps } from './questionComponentTypes';
 import './css/ImageTagQuestion.css';
 
@@ -12,18 +13,11 @@ type ImageTagValue = {
   points?: ImageTagPoint[];
 };
 
-const tagTypes = [
-  { value: 'discomfort', label: '불편' },
-  { value: 'improvement', label: '개선' },
-  { value: 'risk', label: '위험' },
-  { value: 'satisfaction', label: '만족' },
-  { value: 'missing_guidance', label: '안내 부족' },
-];
-
 export function ImageTagQuestion(props: QuestionComponentProps<unknown>) {
   const imageRef = useRef<HTMLImageElement | null>(null);
   const value = readImageTagValue(props.value);
   const points = value.points ?? [];
+  const tagTypes = getImageTagOptions(props.question, props.locale, props.fallbackLocale);
   const asset =
     props.assets.find((item) => item.id === props.question.config.assetId) ??
     props.assets.find((item) => item.questionId === props.question.id || item.sectionId === props.question.sectionId);

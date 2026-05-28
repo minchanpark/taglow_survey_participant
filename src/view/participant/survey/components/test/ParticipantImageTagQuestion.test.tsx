@@ -3,11 +3,11 @@ import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import type { ParticipantImageTagValue, PublicQuestion } from '../../../../api/participant';
-import { createFakeParticipantApiController } from '../../../../test/fakeParticipantApiController';
-import { publishedSurveyFixture } from '../../../../test/fixtures/publicSurveyFixture';
-import { renderWithProviders } from '../../../../test/renderWithProviders';
-import { ParticipantImageTagQuestion } from './ParticipantImageTagQuestion';
+import type { ParticipantImageTagValue, PublicQuestion } from '../../../../../api/participant';
+import { createFakeParticipantApiController } from '../../../../../test/fakeParticipantApiController';
+import { publishedSurveyFixture } from '../../../../../test/fixtures/publicSurveyFixture';
+import { renderWithProviders } from '../../../../../test/renderWithProviders';
+import { ParticipantImageTagQuestion } from '../ParticipantImageTagQuestion';
 
 describe('ParticipantImageTagQuestion', () => {
   const question: PublicQuestion = {
