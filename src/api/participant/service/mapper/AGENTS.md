@@ -5,12 +5,14 @@ This directory converts raw payloads to participant domain models and commands t
 ## Responsibilities
 
 - Map raw survey, section, question, option, and asset rows to `PublicSurvey`.
-- Convert `title_ko`/`title_en` and descriptions to `LocalizedText`.
+- Convert `surveys.title`/`surveys.description` single-column text to `LocalizedText.ko`.
+- Convert section/question `title_ko`/`title_en` and descriptions to `LocalizedText`.
 - Parse `questions.config` into question-type config where practical.
 - Map `SubmissionCommand` to response and answer insert payloads.
 - Extract profile answers into `responses` columns.
 - Expand image tag points into separate answer rows.
 - Preserve `topicKey`, `spaceKey`, `metricType`, and stable option values for analytics.
+- Normalize `metricType` to the DB constraint values: `none`, `satisfaction`, `importance`, or `experience`.
 
 ## Rules
 

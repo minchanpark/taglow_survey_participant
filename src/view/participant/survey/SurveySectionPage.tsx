@@ -72,15 +72,15 @@ export function SurveySectionPage() {
   }, [displayLocale, form, section, session, setDraftStatus, setLastSavedAt, setValues, storage, survey]);
 
   useEffect(() => {
-    form.reset(values);
-  }, [form, values]);
-
-  useEffect(() => {
     setCurrentSectionKey(section?.sectionKey);
   }, [section?.sectionKey, setCurrentSectionKey]);
 
   useEffect(() => {
-    const subscription = form.watch((nextValues) => {
+    const subscription = form.watch((nextValues, info) => {
+      if (!info.name) {
+        return;
+      }
+
       setValues(nextValues as Record<string, unknown>);
       setDraftStatus('idle');
     });

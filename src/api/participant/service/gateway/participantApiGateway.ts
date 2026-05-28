@@ -17,7 +17,12 @@ export type RawSurveyRow = Readonly<{
   description_ko?: string | null;
   description_en?: string | null;
   status: string;
-  public_slug: string;
+  public_slug?: string | null;
+  public_code?: string | null;
+  version_group_id?: string | null;
+  version_number?: number | null;
+  parent_survey_id?: string | null;
+  is_latest_version?: boolean | null;
   settings?: RawJson | null;
   published_at?: string | null;
   closed_at?: string | null;
@@ -121,4 +126,3 @@ export interface ParticipantApiGateway {
     path: string;
   }): Promise<string>;
 }
-

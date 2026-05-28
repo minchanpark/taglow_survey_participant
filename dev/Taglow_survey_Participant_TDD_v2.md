@@ -29,7 +29,7 @@ Participant View
   → ParticipantApiController
   → ParticipantPayloadMapper
   → SupabaseParticipantApiGateway
-  → Supabase Auth / Database / Storage / RPC
+  → Supabase Auth / Database / Storage
 
 서버 구축 후:
 Participant View
@@ -272,6 +272,8 @@ src/
 5. responses unique index 기준 중복 제출 여부 확인
 ```
 
+단, 현재 Supabase RLS는 non-Handong 사용자의 published survey 조회 자체를 숨길 수 있다. 세션이 이미 있고 도메인이 허용되지 않은 경우에는 survey query error를 `/not-found`보다 `/access-denied`로 우선 분기한다.
+
 분기:
 
 ```text
@@ -309,6 +311,167 @@ closed/archived → /survey/:publicSlug/closed
 
 ---
 
+### 6.0 현재 Supabase 스키마 스냅샷
+
+기준 프로젝트:
+
+```text
+project name: taglow-survey
+project ref: tkaltosbhdzkuazslhtp
+database: Postgres 17
+checked at: 2026-05-28
+applied migrations:
+- 001_taglow_survey_core_schema
+- 002_taglow_survey_indexes
+- 003_taglow_survey_security_rpc_storage
+- 004_taglow_survey_function_hardening
+- 005_taglow_survey_private_rls_helpers
+- 006_revoke_exposed_rls_auto_enable
+- 007_align_section_type_values
+```
+
+현재 production DB 상태:
+
+```text
+public.surveys rows: 2, both draft, public_slug null
+public.survey_sections rows: 1
+public.questions rows: 1
+public.survey_assets rows: 0
+public.responses rows: 0
+public.answers rows: 0
+storage bucket: survey-assets, private
+edge functions: none
+participant submit RPC: submit_survey_response is not deployed
+```
+
+중요 구현 결정:
+
+```text
+- surveys는 title/title_ko/title_en 구조가 아니라 title/description 단일 컬럼을 가진다.
+- section/question만 title_ko/title_en, description_ko/description_en 컬럼을 가진다.
+- survey title/description은 LocalizedText.ko로 매핑하고, en이 없으면 ko로 fallback한다.
+- 참여자용 공개 bundle RPC/Edge Function은 없으므로 Supabase gateway는 PostgREST embedded select 한 번으로 surveys + survey_sections + questions + survey_assets를 조합한다.
+- 현재 제출은 submit_survey_response RPC가 아니라 responses insert + answers bulk insert를 사용한다.
+- 정식 런칭 전 transactional submit RPC를 추가하면 SupabaseParticipantApiGateway에 optional submitSurveyResponse를 다시 연결한다.
+- private.is_handong_user() RLS helper는 auth.jwt()->>'email'이 @handong.ac.kr인지 확인한다.
+- responses RLS는 participant_email lower-case가 auth email과 같은지 검사하므로 client payload는 lower-case email을 저장한다.
+```
+
+실제 check constraint:
+
+```text
+surveys.status:
+- draft
+- published
+- closed
+- archived
+
+survey_sections.section_type:
+- intro
+- profile
+- general
+- facility
+- laundry
+- global_lounge
+- identity
+- completion
+- satisfaction
+- space_tagging
+- free_text
+- submitter
+
+questions.question_type / answers.answer_type:
+- profile
+- experience
+- scale
+- single_choice
+- multi_select
+- ranking
+- text
+- image_tag
+- attention_check
+
+questions.metric_type / answers.metric_type:
+- none
+- satisfaction
+- importance
+- experience
+
+responses.status:
+- in_progress
+- submitted
+- discarded
+
+answers.score_value:
+- null or 1..5
+
+answers.x_ratio / answers.y_ratio:
+- null or 0..1
+
+answers.severity:
+- null or 1..5
+```
+
+중요 unique/index:
+
+```text
+surveys.public_slug unique
+surveys(version_group_id, version_number) unique
+survey_sections(survey_id, section_key) unique
+questions(survey_id, question_key) unique
+responses(id, survey_id) unique
+responses unique submitted response:
+  unique (survey_id, participant_user_id) where status = 'submitted'
+
+analytics indexes:
+- responses(survey_id, dormitory, room_type, rc, department, gender)
+- answers(survey_id, answer_type, metric_type)
+- answers(survey_id, topic_key, space_key)
+- answers(survey_id, asset_id, tag_type) where answer_type='image_tag'
+- answers.value_json gin
+```
+
+현재 RLS 요약:
+
+```text
+surveys:
+- authenticated admin can CRUD own surveys
+- authenticated @handong.ac.kr users can select published surveys
+
+survey_sections / questions / survey_assets:
+- authenticated admin can manage own survey structure
+- authenticated @handong.ac.kr users can select rows for published surveys
+- insert/update/delete on published/closed/archived survey structure is blocked by trigger
+
+responses:
+- participant can insert only own response
+- participant_email must match current auth email lower-case
+- participant can read own response
+- admin can read responses of own surveys
+
+answers:
+- participant can insert answers only for own response and same survey
+- participant can read own answers
+- admin can read answers of own surveys
+
+storage.objects:
+- bucket survey-assets is private
+- admin can manage survey asset objects
+- authenticated @handong.ac.kr users can read objects connected to published survey_assets
+```
+
+현재 분석 함수는 관리자/분석 화면용이며 참여자 View에서 직접 호출하지 않는다.
+
+```text
+get_survey_filter_options
+get_section_satisfaction_summary
+get_borich_summary
+get_heatmap_points
+get_text_answers
+```
+
+---
+
 ## 6.1 참여자 조회 모델
 
 ### `surveys`
@@ -323,6 +486,10 @@ title
 description
 status
 public_slug
+version_group_id
+version_number
+parent_survey_id
+is_latest_version
 settings
 published_at
 closed_at
@@ -494,10 +661,14 @@ attention_check:
 ```ts
 export type PublicSurvey = Readonly<{
   id: string;
-  title: string;
-  description?: string;
+  title: LocalizedText;
+  description?: LocalizedText;
   publicSlug: string;
   status: 'published' | 'closed' | 'archived';
+  versionGroupId?: string;
+  versionNumber?: number;
+  parentSurveyId?: string;
+  isLatestVersion?: boolean;
   settings: PublicSurveySettings;
   sections: PublicSurveySection[];
   assets: SurveyAsset[];
@@ -524,7 +695,7 @@ export type PublicQuestion = Readonly<{
   description?: LocalizedText;
   orderIndex: number;
   isRequired: boolean;
-  metricType: MetricType;
+  metricType: 'none' | 'satisfaction' | 'importance' | 'experience';
   topicKey?: string;
   spaceKey?: string;
   config: QuestionConfig;
@@ -571,9 +742,12 @@ export interface ParticipantApiGateway {
 }
 ```
 
+Supabase gateway의 `fetchPublicSurveyBySlug`는 HTTP API 응답처럼 `surveys` row에 embedded `survey_sections`, `questions`, `survey_assets`를 함께 select한 뒤 `RawPublicSurveyBundle`로 풀어준다. View와 query hook은 여전히 단일 `PublicSurvey` domain model만 사용한다.
+
 ### 8.1 제출 방식
 
-MVP에서 선택 가능한 제출 방식은 2개다.
+현재 Supabase production DB에는 `submit_survey_response` RPC가 배포되어 있지 않다.
+따라서 MVP 구현의 현재 기본값은 A안이다.
 
 #### A안. response insert + answers bulk insert
 
@@ -595,7 +769,8 @@ MVP에서 선택 가능한 제출 방식은 2개다.
 
 ```text
 - answers insert 실패 시 response만 남을 수 있음
-- 실패 시 response.status = discarded 처리 필요
+- 현재 participant RLS에는 response update 권한이 없으므로 client에서 discarded로 되돌릴 수 없음
+- 정식 런칭 전에는 B안 RPC 또는 서버 API로 transaction 처리 필요
 ```
 
 #### B안. submit_survey_response RPC
@@ -618,8 +793,9 @@ MVP에서 선택 가능한 제출 방식은 2개다.
 추천:
 
 ```text
-초기 개발은 A안으로 시작 가능.
+현재 DB 기준 초기 개발은 A안으로 동작한다.
 정식 런칭 전에는 B안으로 전환 권장.
+RPC가 배포되기 전에는 SupabaseParticipantApiGateway에 submitSurveyResponse를 구현하지 않는다.
 ```
 
 Participant Controller에서는 두 방식을 같은 use case로 감싼다.
@@ -638,11 +814,13 @@ Mapper 책임:
 
 ```text
 - Supabase survey/section/question/assets row를 PublicSurvey domain으로 변환
-- title_ko/title_en을 LocalizedText로 변환
+- surveys.title/description 단일 컬럼은 LocalizedText.ko로 변환
+- section/question의 title_ko/title_en을 LocalizedText로 변환
 - questions.config를 questionType별 config로 parse
 - form values를 answers insert payload로 변환
 - 기본 정보 문항 값을 responses 컬럼으로 추출
 - image_tag form value를 x_ratio/y_ratio/tag_type/text_value로 변환
+- metric_type은 DB check constraint 값인 none/satisfaction/importance/experience로 normalize
 ```
 
 예시:
@@ -656,7 +834,7 @@ export function toAnswerPayload(input: AnswerInput): RawCreateAnswerPayload {
     question_id: input.questionId,
     asset_id: input.assetId ?? null,
     answer_type: input.answerType,
-    metric_type: input.metricType ?? 'none',
+    metric_type: normalizeMetricType(input.metricType),
     topic_key: input.topicKey ?? null,
     space_key: input.spaceKey ?? null,
     score_value: input.scoreValue ?? null,
@@ -698,7 +876,8 @@ export interface ParticipantApiController {
 ```ts
 export const participantQueryKeys = {
   session: ['participant', 'session'] as const,
-  publicSurvey: (publicSlug: string) => ['participant', 'survey', publicSlug] as const,
+  publicSurvey: (publicSlug: string, authScope: string) =>
+    ['participant', 'survey', publicSlug, authScope] as const,
   duplicateSubmission: (surveyId: string, participantUserId: string) => [
     'participant',
     'survey',
@@ -709,6 +888,8 @@ export const participantQueryKeys = {
   assetUrl: (assetId: string) => ['participant', 'assetUrl', assetId] as const,
 };
 ```
+
+`publicSurvey` query는 session hydration 이후 실행한다. Supabase RLS가 anonymous client에는 published survey row도 숨길 수 있으므로, `authScope`는 `anonymous` 또는 `participantUserId`를 사용해 로그인 전 실패 cache가 로그인 후 화면을 막지 않게 한다.
 
 Mutation:
 
@@ -926,7 +1107,7 @@ export type SubmissionCommand = Readonly<{
 {
   survey_id: command.surveyId,
   participant_user_id: command.participantUserId,
-  participant_email: command.participantEmail,
+  participant_email: command.participantEmail.toLowerCase(),
   status: 'submitted',
   locale: command.locale,
   gender: command.profile.gender,
@@ -993,6 +1174,8 @@ answers:
 - 자기 response에 속한 answer만 insert/select 가능
 ```
 
+실제 RLS는 non-Handong 사용자의 survey select도 차단할 수 있다. 따라서 View guard는 세션이 이미 있고 email domain이 `@handong.ac.kr`이 아니면 survey query 실패를 not-found로 확정하기 전에 `/access-denied`로 보낸다.
+
 ### 17.3 브라우저에 저장하지 말아야 할 것
 
 ```text
@@ -1019,6 +1202,7 @@ questions.config.assetId
 ```
 
 private bucket을 사용하는 경우 signed URL을 사용한다.
+현재 `survey-assets` bucket은 private이며, `storage.objects` select policy는 `survey_assets.storage_bucket/storage_path`와 published survey 연결을 기준으로 허용된다.
 
 이미지 표시 실패 시:
 
@@ -1063,7 +1247,7 @@ export type ParticipantApiErrorCode =
 ```text
 ParticipantPayloadMapper
 - survey bundle row → PublicSurvey 변환
-- title_ko/title_en → LocalizedText 변환
+- survey title/description 단일 컬럼과 section/question title_ko/title_en → LocalizedText 변환
 - form values → response payload 변환
 - form values → answer payload 배열 변환
 - image_tag value → x_ratio/y_ratio payload 변환
@@ -1184,7 +1368,7 @@ Supabase local 또는 staging project에서 검증한다.
 
 ```text
 - response insert + answer bulk insert
-- 또는 submit_survey_response RPC 적용
+- submit_survey_response RPC가 배포되면 gateway optional method로 전환
 - unique violation 처리
 - complete page
 ```

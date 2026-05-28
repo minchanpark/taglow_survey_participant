@@ -25,6 +25,18 @@ describe('participant route guards', () => {
     await waitFor(() => expect(screen.getByText('학교 Google 계정으로 다시 로그인해주세요.')).toBeInTheDocument());
   });
 
+  it('routes non-Handong participants to access denied even when RLS hides the survey row', async () => {
+    renderWithProviders(<AppRoutes />, {
+      route: '/survey/demo/intro',
+      controller: createFakeParticipantApiController({
+        session: { userId: 'user-1', email: 'student@example.com' },
+        surveyError: new Error('RLS prevented survey select'),
+      }),
+    });
+
+    await waitFor(() => expect(screen.getByText('학교 Google 계정으로 다시 로그인해주세요.')).toBeInTheDocument());
+  });
+
   it('routes duplicate participants to already-submitted page', async () => {
     renderWithProviders(<AppRoutes />, {
       route: '/survey/demo/intro',

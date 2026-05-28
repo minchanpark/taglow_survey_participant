@@ -4,10 +4,10 @@ import { useMemo } from 'react';
 import {
   ParticipantApiControllerProvider,
 } from '../controller/participantApiControllerProvider';
-import { createParticipantApiRuntime } from './createParticipantApiRuntime';
+import { getParticipantApiRuntime } from './createParticipantApiRuntime';
 
 export function ParticipantApiRuntimeProvider(props: PropsWithChildren) {
-  const runtime = useMemo(() => createParticipantApiRuntime(), []);
+  const runtime = useMemo(() => getParticipantApiRuntime(), []);
 
   return (
     <ParticipantApiControllerProvider value={runtime.controller}>
@@ -15,4 +15,3 @@ export function ParticipantApiRuntimeProvider(props: PropsWithChildren) {
     </ParticipantApiControllerProvider>
   );
 }
-

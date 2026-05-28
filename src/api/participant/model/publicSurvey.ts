@@ -17,11 +17,15 @@ export type PublicSurvey = Readonly<{
   title: LocalizedText;
   description?: LocalizedText;
   publicSlug: string;
+  publicCode?: string;
   status: SurveyStatus;
+  versionGroupId?: string;
+  versionNumber?: number;
+  parentSurveyId?: string;
+  isLatestVersion?: boolean;
   settings: PublicSurveySettings;
   sections: PublicSurveySection[];
   assets: SurveyAsset[];
   publishedAt?: string;
   closedAt?: string;
 }>;
-

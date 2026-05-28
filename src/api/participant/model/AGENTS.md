@@ -9,6 +9,7 @@ This directory contains pure participant domain types.
 - Keep types independent from Supabase row names and transport payloads.
 - Prefer readonly object shapes for data passed across the API boundary.
 - Model survey status as `published | closed | archived`.
+- Model metric type as the DB constraint union: `none | satisfaction | importance | experience`.
 - Keep section questions nested in `PublicSurveySection.questions`; keep survey assets in `PublicSurvey.assets`.
 
 ## Rules

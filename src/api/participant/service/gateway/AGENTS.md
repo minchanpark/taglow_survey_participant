@@ -13,9 +13,9 @@ This directory owns external IO for participant APIs.
 
 - Define the `ParticipantApiGateway` interface.
 - Provide session/auth IO: `getSession`, `signInWithGoogle`, and `signOut`.
-- Fetch published public survey bundles by public slug from `surveys`, `survey_sections`, `questions`, and `survey_assets`.
+- Fetch published public survey bundles by public slug from `surveys`, `survey_sections`, `questions`, and `survey_assets`; prefer one embedded PostgREST select so the View receives an HTTP-API-like bundle.
 - Check duplicate submission status.
-- Create one `responses` row and many `answers` rows, or call optional `submitSurveyResponse` RPC when available.
+- Create one `responses` row and many `answers` rows. Call optional `submitSurveyResponse` only when the DB/server actually exposes it.
 - Create signed asset URLs for private storage assets.
 - Normalize Supabase/HTTP failures into routeable participant API errors.
 
@@ -41,5 +41,5 @@ createSignedAssetUrl(args): Promise<string>;
 - Do not export raw rows to views or query hooks.
 - Do not delete drafts here; draft cleanup belongs to mutation success handling.
 - Keep HTTP gateway parity with the Supabase gateway contract.
-- If answers bulk insert fails after response creation, controller/gateway handling must mark the response as discarded or route a recoverable submission failure.
+- The current Supabase participant RLS does not allow client-side response updates, so if answers bulk insert fails after response creation, route a recoverable submission failure instead of trying to mark the response as discarded in browser code.
 - Map unique submitted-response violations to `ALREADY_SUBMITTED`.

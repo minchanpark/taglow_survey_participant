@@ -13,10 +13,15 @@ import type {
   RawResponse,
   RawSectionRow,
   RawSession,
-  RawSubmitSurveyPayload,
-  RawSubmitSurveyResult,
   RawSurveyRow,
 } from './participantApiGateway';
+
+type RawEmbeddedSurveyRow = RawSurveyRow &
+  Readonly<{
+    survey_sections?: RawSectionRow[] | null;
+    questions?: RawQuestionRow[] | null;
+    survey_assets?: RawAssetRow[] | null;
+  }>;
 
 export class SupabaseParticipantApiGateway implements ParticipantApiGateway {
   constructor(private readonly supabase: SupabaseClient) {}
@@ -62,8 +67,62 @@ export class SupabaseParticipantApiGateway implements ParticipantApiGateway {
   async fetchPublicSurveyBySlug(publicSlug: string): Promise<RawPublicSurveyBundle> {
     const { data: survey, error: surveyError } = await this.supabase
       .from('surveys')
-      .select('id,title,title_ko,title_en,description,description_ko,description_en,status,public_slug,settings,published_at,closed_at')
-      .eq('public_slug', publicSlug)
+      .select(`
+        id,
+        title,
+        description,
+        status,
+        public_slug,
+        public_code,
+        version_group_id,
+        version_number,
+        parent_survey_id,
+        is_latest_version,
+        settings,
+        published_at,
+        closed_at,
+        survey_sections(
+          id,
+          survey_id,
+          section_key,
+          title_ko,
+          title_en,
+          description_ko,
+          description_en,
+          order_index,
+          section_type,
+          settings
+        ),
+        questions(
+          id,
+          survey_id,
+          section_id,
+          question_key,
+          question_type,
+          title_ko,
+          title_en,
+          description_ko,
+          description_en,
+          order_index,
+          is_required,
+          metric_type,
+          topic_key,
+          space_key,
+          config,
+          validation
+        ),
+        survey_assets(
+          id,
+          survey_id,
+          section_id,
+          question_id,
+          asset_type,
+          storage_bucket,
+          storage_path,
+          metadata
+        )
+      `)
+      .or(`public_slug.eq.${publicSlug},public_code.eq.${publicSlug}`)
       .maybeSingle();
 
     if (surveyError) {
@@ -74,43 +133,13 @@ export class SupabaseParticipantApiGateway implements ParticipantApiGateway {
       throw new ParticipantApiError('SURVEY_NOT_FOUND', 'Survey was not found.');
     }
 
-    const [sectionsResult, questionsResult, assetsResult] = await Promise.all([
-      this.supabase
-        .from('survey_sections')
-        .select('id,survey_id,section_key,title_ko,title_en,description_ko,description_en,order_index,section_type,settings')
-        .eq('survey_id', survey.id)
-        .order('order_index', { ascending: true })
-        .returns<RawSectionRow[]>(),
-      this.supabase
-        .from('questions')
-        .select('id,survey_id,section_id,question_key,question_type,title_ko,title_en,description_ko,description_en,order_index,is_required,metric_type,topic_key,space_key,config,validation')
-        .eq('survey_id', survey.id)
-        .order('order_index', { ascending: true })
-        .returns<RawQuestionRow[]>(),
-      this.supabase
-        .from('survey_assets')
-        .select('id,survey_id,section_id,question_id,asset_type,storage_bucket,storage_path,metadata')
-        .eq('survey_id', survey.id)
-        .returns<RawAssetRow[]>(),
-    ]);
-
-    if (sectionsResult.error) {
-      throw toParticipantApiError(sectionsResult.error, 'SURVEY_NOT_FOUND');
-    }
-
-    if (questionsResult.error) {
-      throw toParticipantApiError(questionsResult.error, 'SURVEY_NOT_FOUND');
-    }
-
-    if (assetsResult.error) {
-      throw toParticipantApiError(assetsResult.error, 'ASSET_LOAD_FAILED');
-    }
+    const embeddedSurvey = survey as RawEmbeddedSurveyRow;
 
     return {
-      survey: survey as RawSurveyRow,
-      sections: sectionsResult.data ?? [],
-      questions: questionsResult.data ?? [],
-      assets: assetsResult.data ?? [],
+      survey: embeddedSurvey,
+      sections: embeddedSurvey.survey_sections ?? [],
+      questions: embeddedSurvey.questions ?? [],
+      assets: embeddedSurvey.survey_assets ?? [],
     };
   }
 
@@ -163,28 +192,6 @@ export class SupabaseParticipantApiGateway implements ParticipantApiGateway {
     }
 
     return data ?? [];
-  }
-
-  async submitSurveyResponse(payload: RawSubmitSurveyPayload): Promise<RawSubmitSurveyResult> {
-    const { data, error } = await this.supabase.rpc('submit_survey_response', {
-      payload,
-    });
-
-    if (error) {
-      throw toParticipantApiError(error, 'SUBMISSION_FAILED');
-    }
-
-    const result = data as { response_id?: string; responseId?: string; submitted_at?: string; submittedAt?: string };
-    const responseId = result.responseId ?? result.response_id;
-
-    if (!responseId) {
-      throw new ParticipantApiError('SUBMISSION_FAILED', 'Submission RPC did not return a response id.');
-    }
-
-    return {
-      responseId,
-      submittedAt: result.submittedAt ?? result.submitted_at,
-    };
   }
 
   async createSignedAssetUrl(args: { bucket: string; path: string }): Promise<string> {

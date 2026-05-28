@@ -12,6 +12,13 @@ export type ParticipantApiRuntime = Readonly<{
   controller: ParticipantApiController;
 }>;
 
+let participantApiRuntime: ParticipantApiRuntime | null = null;
+
+export function getParticipantApiRuntime(): ParticipantApiRuntime {
+  participantApiRuntime ??= createParticipantApiRuntime();
+  return participantApiRuntime;
+}
+
 export function createParticipantApiRuntime(): ParticipantApiRuntime {
   const config = readEnvConfig();
   const mapper = new ParticipantPayloadMapper();

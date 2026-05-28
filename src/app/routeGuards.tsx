@@ -35,7 +35,15 @@ export function RequireParticipantAccess(props: PropsWithChildren) {
     participantUserId: session?.userId,
   });
 
-  if (surveyQuery.isPending || sessionQuery.isPending) {
+  if (sessionQuery.isPending) {
+    return <GuardState title="참여 가능 여부를 확인하고 있습니다." />;
+  }
+
+  if (session && !isAllowedParticipantEmail(session.email)) {
+    return <Navigate to={`/survey/${publicSlug}/access-denied`} replace />;
+  }
+
+  if (surveyQuery.isPending) {
     return <GuardState title="참여 가능 여부를 확인하고 있습니다." />;
   }
 
@@ -53,10 +61,6 @@ export function RequireParticipantAccess(props: PropsWithChildren) {
 
   if (!session) {
     return <Navigate to={`/survey/${publicSlug}/login`} replace />;
-  }
-
-  if (!isAllowedParticipantEmail(session.email)) {
-    return <Navigate to={`/survey/${publicSlug}/access-denied`} replace />;
   }
 
   if (duplicateQuery.isPending) {

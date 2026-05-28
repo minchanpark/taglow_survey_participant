@@ -14,7 +14,11 @@ export function SurveyEntryPage() {
   const sessionQuery = useParticipantSessionQuery();
   const { locale, setLocale } = useParticipantLocaleStore();
 
-  if (surveyQuery.isPending) {
+  if (sessionQuery.data && !isAllowedParticipantEmail(sessionQuery.data.email)) {
+    return <Navigate to={`/survey/${publicSlug}/access-denied`} replace />;
+  }
+
+  if (surveyQuery.isPending || sessionQuery.isPending) {
     return <EntryShell title="설문을 불러오고 있습니다." description="잠시만 기다려주세요." />;
   }
 
@@ -48,10 +52,6 @@ export function SurveyEntryPage() {
 
   if (survey.status !== 'published') {
     return <Navigate to={`/survey/${publicSlug}/closed`} replace />;
-  }
-
-  if (sessionQuery.data && !isAllowedParticipantEmail(sessionQuery.data.email)) {
-    return <Navigate to={`/survey/${publicSlug}/access-denied`} replace />;
   }
 
   if (sessionQuery.data) {

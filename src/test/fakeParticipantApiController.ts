@@ -15,6 +15,7 @@ import { publishedSurveyFixture } from './fixtures/publicSurveyFixture';
 type FakeControllerOverrides = Partial<{
   session: ParticipantSession | null;
   survey: PublicSurvey;
+  surveyError: Error;
   duplicate: DuplicateSubmissionResult;
   submitResult: SubmissionResult;
 }>;
@@ -22,6 +23,7 @@ type FakeControllerOverrides = Partial<{
 export function createFakeParticipantApiController(overrides: FakeControllerOverrides = {}): ParticipantApiController {
   const session = Object.hasOwn(overrides, 'session') ? overrides.session ?? null : { userId: 'user-1', email: 'student@handong.ac.kr' };
   const survey = overrides.survey ?? publishedSurveyFixture;
+  const surveyError = overrides.surveyError;
   const duplicate = overrides.duplicate ?? { alreadySubmitted: false };
   const submitResult = overrides.submitResult ?? { responseId: 'response-1', submittedAt: '2026-05-28T00:00:00.000Z' };
 
@@ -36,6 +38,10 @@ export function createFakeParticipantApiController(overrides: FakeControllerOver
       return undefined;
     },
     async getPublicSurvey() {
+      if (surveyError) {
+        throw surveyError;
+      }
+
       return survey;
     },
     async checkAccess(): Promise<SurveyAccessResult> {

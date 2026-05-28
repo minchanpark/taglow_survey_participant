@@ -1,6 +1,13 @@
 import type { AnswerInput } from '../../model/answerDraft';
 import type { SurveyAsset } from '../../model/asset';
-import type { PublicQuestion, QuestionConfig, QuestionType, QuestionValidation } from '../../model/question';
+import type {
+  MetricType,
+  PublicQuestion,
+  QuestionConfig,
+  QuestionOption,
+  QuestionType,
+  QuestionValidation,
+} from '../../model/question';
 import type { LocalizedText, PublicSurvey, SurveyStatus } from '../../model/publicSurvey';
 import type { PublicSurveySection } from '../../model/section';
 import type { SubmissionCommand, SubmissionResult } from '../../model/submission';
@@ -29,8 +36,13 @@ export class ParticipantPayloadMapper {
       id: bundle.survey.id,
       title: toLocalizedText(bundle.survey, 'title'),
       description: toOptionalLocalizedText(bundle.survey, 'description'),
-      publicSlug: bundle.survey.public_slug,
+      publicSlug: bundle.survey.public_slug ?? bundle.survey.public_code ?? '',
+      publicCode: bundle.survey.public_code ?? undefined,
       status: normalizeSurveyStatus(bundle.survey.status),
+      versionGroupId: bundle.survey.version_group_id ?? undefined,
+      versionNumber: bundle.survey.version_number ?? undefined,
+      parentSurveyId: bundle.survey.parent_survey_id ?? undefined,
+      isLatestVersion: bundle.survey.is_latest_version ?? undefined,
       settings: bundle.survey.settings ?? {},
       sections,
       assets: bundle.assets.map(toSurveyAsset),
@@ -64,10 +76,10 @@ export class ParticipantPayloadMapper {
       description: toOptionalLocalizedText(row, 'description'),
       orderIndex: row.order_index,
       isRequired: row.is_required ?? false,
-      metricType: row.metric_type ?? 'none',
+      metricType: normalizeMetricType(row.metric_type),
       topicKey: row.topic_key ?? undefined,
       spaceKey: row.space_key ?? undefined,
-      config: parseRecord(row.config) as QuestionConfig,
+      config: normalizeQuestionConfig(parseRecord(row.config)),
       validation: parseRecord(row.validation) as QuestionValidation,
     };
   }
@@ -76,7 +88,7 @@ export class ParticipantPayloadMapper {
     return {
       survey_id: command.surveyId,
       participant_user_id: command.participantUserId,
-      participant_email: command.participantEmail,
+      participant_email: command.participantEmail.toLowerCase(),
       status: 'submitted',
       locale: command.locale,
       gender: command.profile.gender ?? null,
@@ -101,7 +113,7 @@ export class ParticipantPayloadMapper {
       question_id: input.questionId,
       asset_id: input.assetId ?? null,
       answer_type: input.answerType,
-      metric_type: input.metricType ?? 'none',
+      metric_type: normalizeMetricType(input.metricType),
       topic_key: input.topicKey ?? null,
       space_key: input.spaceKey ?? null,
       score_value: input.scoreValue ?? null,
@@ -192,6 +204,88 @@ function normalizeSurveyStatus(status: string): SurveyStatus {
   }
 
   return 'closed';
+}
+
+function normalizeMetricType(metricType: unknown): MetricType {
+  if (metricType === 'satisfaction' || metricType === 'importance' || metricType === 'experience') {
+    return metricType;
+  }
+
+  return 'none';
+}
+
+function normalizeQuestionConfig(config: Record<string, unknown>): QuestionConfig {
+  const rawOptions = readArray(config.options) ?? readArray(config.choices) ?? readArray(config.items);
+  const options = rawOptions?.map(normalizeQuestionOption).filter((option): option is QuestionOption => Boolean(option));
+
+  if (!options) {
+    return config as QuestionConfig;
+  }
+
+  return {
+    ...config,
+    options,
+  } as QuestionConfig;
+}
+
+function normalizeQuestionOption(option: unknown): QuestionOption | null {
+  if (typeof option === 'string') {
+    return {
+      value: option,
+      label: { ko: option },
+    };
+  }
+
+  const record = parseRecord(option);
+  const value =
+    readString(record.value) ??
+    readString(record.id) ??
+    readString(record.key) ??
+    readString(record.code) ??
+    readString(record.optionValue);
+
+  if (!value) {
+    return null;
+  }
+
+  return {
+    value,
+    label: normalizeLocalizedLabel(record, value),
+    metadata: parseRecord(record.metadata),
+  };
+}
+
+function normalizeLocalizedLabel(record: Record<string, unknown>, fallback: string): LocalizedText {
+  const label = record.label;
+  if (typeof label === 'string' && label.length > 0) {
+    return { ko: label };
+  }
+
+  const labelRecord = parseRecord(label);
+  const ko =
+    readString(labelRecord.ko) ??
+    readString(record.label_ko) ??
+    readString(record.title_ko) ??
+    readString(record.text_ko) ??
+    readString(record.name_ko) ??
+    readString(record.title) ??
+    readString(record.text) ??
+    fallback;
+  const en =
+    readString(labelRecord.en) ??
+    readString(record.label_en) ??
+    readString(record.title_en) ??
+    readString(record.text_en) ??
+    readString(record.name_en);
+
+  return {
+    ko,
+    ...(en ? { en } : {}),
+  };
+}
+
+function readArray(value: unknown): unknown[] | undefined {
+  return Array.isArray(value) ? value : undefined;
 }
 
 function parseRecord(value: unknown): Record<string, unknown> {

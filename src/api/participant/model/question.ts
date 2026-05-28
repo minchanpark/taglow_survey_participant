@@ -11,7 +11,7 @@ export type QuestionType =
   | 'image_tag'
   | 'attention_check';
 
-export type MetricType = 'satisfaction' | 'importance' | 'none' | string;
+export type MetricType = 'none' | 'satisfaction' | 'importance' | 'experience';
 
 export type QuestionOption = Readonly<{
   value: string;
@@ -55,4 +55,3 @@ export type PublicQuestion = Readonly<{
   config: QuestionConfig;
   validation: QuestionValidation;
 }>;
-
