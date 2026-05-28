@@ -1,0 +1,17 @@
+.survey-section-page {
+  min-height: 100vh;
+  max-width: var(--layout-content-max);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5) calc(var(--layout-bottom-action-height) + var(--space-10));
+}
+
+.survey-section-page__questions {
+  display: grid;
+  gap: var(--space-5);
+  margin-top: var(--space-6);
+}
+
+.survey-section-page__bottom {
+  grid-template-columns: minmax(96px, 0.4fr) 1fr;
+  gap: var(--space-3);
+}

@@ -37,6 +37,13 @@ a {
   color: inherit;
 }
 
+.route-state {
+  min-height: 100vh;
+  max-width: var(--layout-mobile-max);
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-5);
+}
+
 :focus-visible {
   outline: 2px solid var(--color-brand-600);
   outline-offset: 3px;
@@ -46,4 +53,3 @@ a {
   background: var(--color-brand-100);
   color: var(--color-text);
 }
-

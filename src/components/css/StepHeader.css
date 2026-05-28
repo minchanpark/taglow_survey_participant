@@ -1,0 +1,26 @@
+.ui-step-header {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.ui-step-header__eyebrow {
+  margin: 0;
+  color: var(--color-brand-700);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-caption);
+}
+
+.ui-step-header__title {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--font-size-title);
+  line-height: var(--line-height-title);
+}
+
+.ui-step-header__description {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}

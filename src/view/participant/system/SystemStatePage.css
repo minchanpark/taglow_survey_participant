@@ -1,0 +1,32 @@
+.system-state-page {
+  min-height: 100vh;
+  max-width: var(--layout-mobile-max);
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-5);
+}
+
+.system-state-page__content {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.system-state-page__content p {
+  margin: 0;
+  color: var(--color-brand-700);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+}
+
+.system-state-page__content h1 {
+  margin: 0;
+  font-size: var(--font-size-display);
+  line-height: var(--line-height-display);
+}
+
+.system-state-page__content span {
+  color: var(--color-text-muted);
+}
+
+.system-state-page__extra {
+  color: var(--color-text-muted);
+}

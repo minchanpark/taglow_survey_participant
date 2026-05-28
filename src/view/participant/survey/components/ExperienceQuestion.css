@@ -1,0 +1,58 @@
+.experience-question,
+.single-choice-question,
+.attention-check-question {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.experience-question button,
+.single-choice-question button,
+.attention-check-question button,
+.multi-select-question__chips button,
+.text-question__chips button,
+.low-score-follow-up__chips button,
+.image-tag-question__chips button {
+  min-height: 48px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  padding: 0 var(--space-4);
+  text-align: left;
+}
+
+.experience-question button.is-selected,
+.single-choice-question button.is-selected,
+.attention-check-question button.is-selected,
+.multi-select-question__chips button.is-selected,
+.text-question__chips button.is-selected,
+.low-score-follow-up__chips button.is-selected,
+.image-tag-question__chips button.is-selected {
+  border-color: var(--color-brand-600);
+  background: var(--color-brand-100);
+  color: var(--color-brand-700);
+  font-weight: var(--font-weight-bold);
+}
+
+.experience-question label,
+.image-tag-question label {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-small);
+}
+
+.experience-question input,
+.image-tag-question select,
+.image-tag-question textarea,
+.text-question textarea,
+.multi-select-question input,
+.low-score-follow-up textarea {
+  min-height: 48px;
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text);
+}

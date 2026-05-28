@@ -1,0 +1,29 @@
+.participant-login-page {
+  min-height: 100vh;
+  max-width: var(--layout-mobile-max);
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-5);
+}
+
+.participant-login-page__content {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.participant-login-page__eyebrow {
+  margin: 0;
+  color: var(--color-brand-700);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+}
+
+.participant-login-page h1 {
+  margin: 0;
+  font-size: var(--font-size-display);
+  line-height: var(--line-height-display);
+}
+
+.participant-login-page p {
+  margin: 0;
+  color: var(--color-text-muted);
+}

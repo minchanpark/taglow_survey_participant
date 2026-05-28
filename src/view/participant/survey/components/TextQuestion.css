@@ -1,0 +1,6 @@
+@import "./MultiSelectQuestion.css";
+
+.text-question textarea {
+  min-height: 120px;
+  resize: vertical;
+}

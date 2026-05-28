@@ -6,6 +6,23 @@ export type BranchRule = Readonly<{
   value: unknown;
 }>;
 
+export type BranchConfig = Readonly<{
+  when?: BranchRule | BranchRule[];
+}>;
+
+export function shouldShowQuestion(args: {
+  question: { config?: Record<string, unknown> };
+  values: Record<string, unknown>;
+}): boolean {
+  const branchConfig = readBranchConfig(args.question.config);
+  if (!branchConfig) {
+    return true;
+  }
+
+  const rules = Array.isArray(branchConfig.when) ? branchConfig.when : [branchConfig.when];
+  return rules.every((rule) => rule && evaluateBranchRule({ rule, values: args.values }));
+}
+
 export function evaluateBranchRule(args: {
   rule: BranchRule;
   values: Record<string, unknown>;
@@ -43,3 +60,11 @@ function compareNumber(actual: unknown, expected: unknown, compare: (actual: num
   return compare(actual, expected);
 }
 
+function readBranchConfig(config: Record<string, unknown> | undefined): BranchConfig | undefined {
+  const branch = config?.branch ?? config?.visibility;
+  if (typeof branch !== 'object' || branch === null) {
+    return undefined;
+  }
+
+  return branch as BranchConfig;
+}

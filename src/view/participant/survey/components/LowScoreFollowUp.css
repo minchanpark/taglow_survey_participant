@@ -1,0 +1,19 @@
+.low-score-follow-up {
+  display: grid;
+  gap: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-subtle);
+  padding: var(--space-4);
+}
+
+.low-score-follow-up p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-small);
+}
+
+.low-score-follow-up__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

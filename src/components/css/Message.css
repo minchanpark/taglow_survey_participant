@@ -1,0 +1,48 @@
+.ui-message {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+  justify-content: space-between;
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+}
+
+.ui-message--info {
+  border-color: var(--color-brand-100);
+  background: var(--color-brand-50);
+}
+
+.ui-message--success {
+  background: var(--color-success-bg);
+}
+
+.ui-message--warning {
+  background: var(--color-warning-bg);
+}
+
+.ui-message--error {
+  background: var(--color-danger-bg);
+}
+
+.ui-message__title {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+.ui-message__content {
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.ui-message__content p {
+  margin: 0;
+}
+
+.ui-message__action {
+  flex: 0 0 auto;
+}

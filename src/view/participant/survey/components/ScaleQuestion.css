@@ -1,0 +1,32 @@
+.scale-question {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.scale-question__labels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-caption);
+}
+
+.scale-question__buttons {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(44px, 1fr));
+  gap: var(--space-2);
+}
+
+.scale-question__buttons button {
+  aspect-ratio: 1;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-subtle);
+  color: var(--color-text);
+  font-weight: var(--font-weight-bold);
+}
+
+.scale-question__buttons button.is-selected {
+  border-color: var(--color-brand-600);
+  background: var(--color-brand-600);
+  color: var(--color-bg);
+}

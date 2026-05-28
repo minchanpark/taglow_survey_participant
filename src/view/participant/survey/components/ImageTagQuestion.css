@@ -1,0 +1,65 @@
+@import "./MultiSelectQuestion.css";
+
+.image-tag-question__canvas {
+  position: relative;
+  overflow: hidden;
+  min-height: 220px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-subtle);
+}
+
+.image-tag-question__canvas img {
+  display: block;
+  width: 100%;
+  height: auto;
+  cursor: crosshair;
+}
+
+.image-tag-question__placeholder {
+  display: grid;
+  min-height: 220px;
+  place-items: center;
+  color: var(--color-text-muted);
+}
+
+.image-tag-question__pin {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  transform: translate(-50%, -50%);
+  border: 2px solid var(--color-bg);
+  border-radius: var(--radius-pill);
+  background: var(--color-brand-600);
+  color: var(--color-bg);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-bold);
+  box-shadow: var(--shadow-soft);
+}
+
+.image-tag-question__count,
+.image-tag-question__error {
+  font-size: var(--font-size-small);
+}
+
+.image-tag-question__error {
+  color: var(--color-danger);
+}
+
+.image-tag-question__points {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.image-tag-question__points article {
+  display: grid;
+  gap: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-subtle);
+  padding: var(--space-4);
+}
+
+.image-tag-question__points h3 {
+  margin: 0;
+  font-size: var(--font-size-body);
+}

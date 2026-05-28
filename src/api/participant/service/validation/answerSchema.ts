@@ -10,6 +10,14 @@ export const profileAnswerSchema = z.object({
   valueJson: z.record(z.string(), z.unknown()),
 });
 
+export const experienceAnswerSchema = z.object({
+  answerType: z.literal('experience'),
+  valueJson: z.object({
+    experienceStatus: z.string().min(1),
+    noExperienceReason: z.string().optional().nullable(),
+  }),
+});
+
 export const scaleAnswerSchema = z.object({
   answerType: z.literal('scale'),
   scoreValue: z.number().int().min(1).max(5),
@@ -63,6 +71,7 @@ export const attentionCheckAnswerSchema = z.object({
 
 export const answerInputSchema = z.discriminatedUnion('answerType', [
   profileAnswerSchema,
+  experienceAnswerSchema,
   scaleAnswerSchema,
   singleChoiceAnswerSchema,
   multiSelectAnswerSchema,

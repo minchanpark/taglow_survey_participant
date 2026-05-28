@@ -1,0 +1,23 @@
+.multi-select-question,
+.text-question,
+.ranking-question,
+.image-tag-question {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.multi-select-question p,
+.ranking-question p,
+.image-tag-question p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-small);
+}
+
+.multi-select-question__chips,
+.text-question__chips,
+.image-tag-question__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
