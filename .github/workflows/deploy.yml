@@ -1,0 +1,138 @@
+name: Deploy Participant Frontend
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-participant-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NODE_VERSION: "20.19.5"
+      APP_NAME: frontend-participant
+      CONTAINER_NAME: frontend-participant
+      IMAGE_REPOSITORY: frontend-participant
+      DEPLOY_ROOT: /opt/taglow/frontend-participant
+      RELEASE_DIR: /tmp/taglow-frontend-participant-${{ github.sha }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.4.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Create production env file
+        env:
+          ENV_FILE_CONTENTS: ${{ secrets.ENV_FILE }}
+        run: |
+          printf '%s' "$ENV_FILE_CONTENTS" > .env.production
+          chmod 600 .env.production
+          test -s .env.production
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Build production assets
+        run: pnpm run build
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build deployment image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true
+          tags: ${{ env.IMAGE_REPOSITORY }}:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.title=taglow-survey-participant
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            com.taglow.service=${{ env.APP_NAME }}
+          cache-from: type=gha,scope=participant-frontend
+          cache-to: type=gha,mode=max,scope=participant-frontend
+
+      - name: Package Docker image
+        run: |
+          docker save "${IMAGE_REPOSITORY}:${GITHUB_SHA}" | gzip -1 > "${IMAGE_REPOSITORY}_${GITHUB_SHA}.tar.gz"
+
+      - name: Configure SSH
+        env:
+          EC2_SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          EC2_TARGET: ${{ secrets.EC2_HOST }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$EC2_SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H "${EC2_TARGET##*@}" >> ~/.ssh/known_hosts
+
+      - name: Prepare remote release directory
+        env:
+          EC2_TARGET: ${{ secrets.EC2_HOST }}
+        run: |
+          ssh "$EC2_TARGET" "mkdir -p '${RELEASE_DIR}'"
+
+      - name: Upload deployment bundle
+        env:
+          EC2_TARGET: ${{ secrets.EC2_HOST }}
+        run: |
+          scp \
+            deploy.sh \
+            docker-compose.prod.yml \
+            "${IMAGE_REPOSITORY}_${GITHUB_SHA}.tar.gz" \
+            "$EC2_TARGET:${RELEASE_DIR}/"
+
+      - name: Deploy on EC2
+        env:
+          EC2_TARGET: ${{ secrets.EC2_HOST }}
+        shell: bash
+        run: |
+          ssh "$EC2_TARGET" bash -s -- \
+            "$RELEASE_DIR" \
+            "$DEPLOY_ROOT" \
+            "$APP_NAME" \
+            "$IMAGE_REPOSITORY" \
+            "$GITHUB_SHA" \
+            "$CONTAINER_NAME" <<'EOF'
+          set -euo pipefail
+
+          RELEASE_DIR="$1"
+          DEPLOY_ROOT="$2"
+          APP_NAME="$3"
+          IMAGE_REPOSITORY="$4"
+          IMAGE_TAG="$5"
+          CONTAINER_NAME="$6"
+
+          chmod +x "$RELEASE_DIR/deploy.sh"
+          "$RELEASE_DIR/deploy.sh" \
+            --release-dir "$RELEASE_DIR" \
+            --archive "$RELEASE_DIR/${IMAGE_REPOSITORY}_${IMAGE_TAG}.tar.gz" \
+            --compose-file "$RELEASE_DIR/docker-compose.prod.yml" \
+            --deploy-root "$DEPLOY_ROOT" \
+            --app-name "$APP_NAME" \
+            --image-repository "$IMAGE_REPOSITORY" \
+            --image-tag "$IMAGE_TAG" \
+            --container-name "$CONTAINER_NAME"
+          EOF
