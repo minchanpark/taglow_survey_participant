@@ -27,7 +27,7 @@ export function MultiSelectQuestion(props: QuestionComponentProps<unknown>) {
   };
 
   return (
-    <QuestionShell question={props.question} locale={props.locale} fallbackLocale={props.fallbackLocale} error={props.error}>
+    <QuestionShell question={props.question} locale={props.locale} fallbackLocale={props.fallbackLocale} error={props.error} number={props.number}>
       <div className="multi-select-question">
         <p>{maxSelections ? `최대 ${maxSelections}개까지 선택할 수 있습니다.` : '해당하는 항목을 모두 선택해주세요.'}</p>
         <div className="multi-select-question__chips">

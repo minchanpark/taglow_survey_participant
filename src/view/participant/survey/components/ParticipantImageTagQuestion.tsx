@@ -156,7 +156,7 @@ export function ParticipantImageTagQuestion(props: QuestionComponentProps<unknow
   };
 
   return (
-    <QuestionShell question={props.question} locale={props.locale} fallbackLocale={props.fallbackLocale} error={props.error}>
+    <QuestionShell question={props.question} locale={props.locale} fallbackLocale={props.fallbackLocale} error={props.error} number={props.number}>
       <div className={rootClassName}>
         <div className="participant-image-tag-question__upload">
           <label className="participant-image-tag-question__upload-button">

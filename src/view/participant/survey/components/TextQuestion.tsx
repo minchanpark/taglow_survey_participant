@@ -21,7 +21,7 @@ export function TextQuestion(props: QuestionComponentProps<unknown>) {
   const value = readTextValue(props.value);
 
   return (
-    <QuestionShell question={props.question} locale={props.locale} fallbackLocale={props.fallbackLocale} error={props.error}>
+    <QuestionShell question={props.question} locale={props.locale} fallbackLocale={props.fallbackLocale} error={props.error} number={props.number}>
       <div className="text-question">
         <div className="text-question__chips" aria-label="의견 유형">
           {opinionTypes.map((item) => (

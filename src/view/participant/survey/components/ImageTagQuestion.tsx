@@ -125,7 +125,7 @@ export function ImageTagQuestion(props: QuestionComponentProps<unknown>) {
   };
 
   return (
-    <QuestionShell question={props.question} locale={props.locale} fallbackLocale={props.fallbackLocale} error={props.error}>
+    <QuestionShell question={props.question} locale={props.locale} fallbackLocale={props.fallbackLocale} error={props.error} number={props.number}>
       <div className={rootClassName}>
         <p>사진에서 불편하거나 개선이 필요한 위치를 선택해주세요.</p>
         {!asset ? <p className="image-tag-question__error">연결된 이미지를 찾을 수 없습니다.</p> : null}
