@@ -18,6 +18,7 @@ import { buildDraftKey } from '../../../utils/draftKey';
 import { formatShortDateTime } from '../../../utils/dateTime';
 import { readLocalizedText, resolveSurveyDefaultLocale } from '../../../utils/i18nText';
 import { DraftRestoreBanner } from './components/DraftRestoreBanner';
+import { MultiSelectQuestionGroup } from './components/MultiSelectQuestionGroup';
 import { QuestionRenderer } from './components/QuestionRenderer';
 import { ScaleQuestionGroup } from './components/ScaleQuestionGroup';
 import { buildQuestionRenderBlocks, getQuestionRenderBlockId } from './components/questionRenderBlocks';
@@ -235,6 +236,24 @@ export function SurveySectionPage() {
             if (block.type === 'scale_group') {
               return (
                 <ScaleQuestionGroup
+                  key={block.id}
+                  groupTitle={block.groupTitle}
+                  questions={block.questions}
+                  locale={displayLocale}
+                  fallbackLocale={defaultLocale}
+                  values={Object.fromEntries(block.questions.map((question) => [question.id, form.watch(question.id)]))}
+                  missingQuestionIds={missingQuestionIds}
+                  number={renderBlockNumberById.get(block.id)}
+                  onChange={(questionId, value) => {
+                    form.setValue(questionId, value, { shouldDirty: true, shouldTouch: true });
+                  }}
+                />
+              );
+            }
+
+            if (block.type === 'multi_select_group') {
+              return (
+                <MultiSelectQuestionGroup
                   key={block.id}
                   groupTitle={block.groupTitle}
                   questions={block.questions}
