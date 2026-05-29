@@ -42,6 +42,25 @@ describe('buildSubmissionAnswers', () => {
     );
   });
 
+  it('drops stale low-score details when a scale score is above the low-score threshold', () => {
+    const answers = buildSubmissionAnswers(publishedSurveyFixture, {
+      'question-scale': {
+        scoreValue: 3,
+        lowScoreReason: 'low_quality',
+        lowScoreText: '이전 낮은 점수 이유입니다.',
+      },
+    });
+
+    expect(answers).toEqual([
+      expect.objectContaining({
+        questionId: 'question-scale',
+        answerType: 'scale',
+        scoreValue: 3,
+        valueJson: {},
+      }),
+    ]);
+  });
+
   it('aggregates individual profile question answers into respondent profile columns', () => {
     const profileSurvey = {
       ...publishedSurveyFixture,

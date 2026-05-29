@@ -33,14 +33,19 @@ export function normalizeAnswerInput(question: PublicQuestion, value: unknown): 
       return [{ ...base, valueJson: readRecord(value) }];
     case 'scale': {
       const record = readRecord(value);
+      const scoreValue = readNumber(record.scoreValue);
+      const lowScoreThreshold = readLowScoreThreshold(question);
       return [
         {
           ...base,
-          scoreValue: readNumber(record.scoreValue),
-          valueJson: pickDefined({
-            low_score_reason: readString(record.lowScoreReason),
-            low_score_text: readString(record.lowScoreText),
-          }),
+          scoreValue,
+          valueJson:
+            typeof scoreValue === 'number' && scoreValue <= lowScoreThreshold
+              ? pickDefined({
+                  low_score_reason: readString(record.lowScoreReason),
+                  low_score_text: readString(record.lowScoreText),
+                })
+              : {},
         },
       ];
     }
@@ -356,6 +361,10 @@ function readParticipantImageTagPoints(value: unknown, requireText: boolean): Pa
 
 function isTagTextRequired(question: PublicQuestion): boolean {
   return question.validation.requiredTagText === true || question.config.requireText === true;
+}
+
+function readLowScoreThreshold(question: PublicQuestion): number {
+  return typeof question.config.lowScoreThreshold === 'number' ? question.config.lowScoreThreshold : 2;
 }
 
 function pickDefined(record: Record<string, unknown>): Record<string, unknown> {

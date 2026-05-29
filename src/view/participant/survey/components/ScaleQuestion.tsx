@@ -26,7 +26,7 @@ export function ScaleQuestion(props: QuestionComponentProps<unknown>) {
               key={score}
               type="button"
               className={value.scoreValue === score ? 'is-selected' : ''}
-              onClick={() => props.onChange({ ...value, scoreValue: score })}
+              onClick={() => props.onChange(score <= threshold ? { ...value, scoreValue: score } : { scoreValue: score })}
             >
               {score}
             </button>
