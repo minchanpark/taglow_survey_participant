@@ -1,4 +1,5 @@
-import { fireEvent, screen } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { PublicQuestion } from '../../../../../api/participant';
@@ -25,7 +26,8 @@ describe('ImageTagQuestion', () => {
     validation: {},
   };
 
-  it('uses admin-configured tag categories for image tag points', async () => {
+  it('opens a point dialog after dragging the red dot onto the image', async () => {
+    const user = userEvent.setup();
     const onChange = vi.fn();
     renderWithProviders(
       <ImageTagQuestion
@@ -38,15 +40,22 @@ describe('ImageTagQuestion', () => {
       />,
     );
 
-    fireEvent.pointerDown(await screen.findByRole('img', { name: '위치를 선택할 시설 이미지' }), {
-      clientX: 10,
-      clientY: 10,
-    });
+    mockImageRect(await screen.findByRole('img', { name: '위치를 선택할 시설 이미지' }));
+    dragNewPointToImage(50, 25);
+
+    expect(await screen.findByRole('dialog', { name: '위치 내용 입력' })).toBeInTheDocument();
+    expect(screen.getByLabelText('카테고리')).toHaveValue('냉난방');
+
+    await user.type(screen.getByLabelText('이유'), '창틀이 흔들립니다.');
+    await user.click(screen.getByRole('button', { name: '저장' }));
 
     expect(onChange).toHaveBeenCalledWith({
       points: [
         expect.objectContaining({
+          xRatio: 0.5,
+          yRatio: 0.5,
           tagType: '냉난방',
+          textValue: '창틀이 흔들립니다.',
         }),
       ],
     });
@@ -74,8 +83,26 @@ describe('ImageTagQuestion', () => {
       />,
     );
 
-    expect(await screen.findByRole('button', { name: '냉난방' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '소음' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '위험' })).not.toBeInTheDocument();
+    await userEvent.click(await screen.findByRole('button', { name: '1번 위치 수정' }));
+
+    const categorySelect = screen.getByLabelText('카테고리');
+    expect(within(categorySelect).getByRole('option', { name: '냉난방' })).toBeInTheDocument();
+    expect(within(categorySelect).getByRole('option', { name: '소음' })).toBeInTheDocument();
+    expect(within(categorySelect).queryByRole('option', { name: '위험' })).not.toBeInTheDocument();
   });
 });
+
+function dragNewPointToImage(clientX: number, clientY: number) {
+  const dot = screen.getByRole('button', { name: '새 위치 점을 이미지로 드래그' });
+  fireEvent.pointerDown(dot, { pointerId: 1, clientX: 0, clientY: 120 });
+  fireEvent.pointerUp(dot, { pointerId: 1, clientX, clientY });
+}
+
+function mockImageRect(image: HTMLElement) {
+  vi.spyOn(image, 'getBoundingClientRect').mockReturnValue({
+    left: 0,
+    top: 0,
+    width: 100,
+    height: 50,
+  } as DOMRect);
+}
